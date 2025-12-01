@@ -78,7 +78,54 @@ Required packages:
 - psutil
 - openpyxl
 
-### 3. Configure Environment Variables
+### 3. Setup Credential Files
+
+This project uses `.example` files for security. You must copy and configure these files with your credentials:
+
+#### a. Configure Application Credentials
+
+```bash
+# Copy the example file
+cp app.example.py app.py
+
+# Edit app.py and update the USERS dictionary with your credentials
+```
+
+In `app.py`, change these lines:
+```python
+USERS = {
+    'admin': generate_password_hash('admin123'),  # Change this password
+    'user2': generate_password_hash('changeme')   # Add/remove users as needed
+}
+```
+
+#### b. Configure Scraper Credentials
+
+**For Adsy Scraper:**
+```bash
+# Copy the example file
+cp scrapers/adsy_scraper.example.py scrapers/adsy_scraper.py
+```
+
+Update the `login()` method in `scrapers/adsy_scraper.py`:
+```python
+def login(self, email='your-adsy-email@example.com', password='your-adsy-password'):
+```
+
+**For Icopify Scraper:**
+```bash
+# Copy the example file
+cp scrapers/icopify_scraper.example.py scrapers/icopify_scraper.py
+```
+
+Update the `login()` method in `scrapers/icopify_scraper.py`:
+```python
+def login(self, username="your-icopify-username", password="your-icopify-password"):
+```
+
+**IMPORTANT**: These files (`app.py`, `scrapers/adsy_scraper.py`, `scrapers/icopify_scraper.py`) are in `.gitignore` and will NOT be committed to version control.
+
+### 4. Configure Environment Variables
 
 Create a `config.py` file or set environment variables:
 
@@ -90,11 +137,11 @@ HUNTER_API_KEY = 'your-hunter-io-api-key'
 
 **IMPORTANT**: Never commit API keys or credentials to the repository!
 
-### 4. Initialize Database
+### 5. Initialize Database
 
 The application will automatically create the SQLite database on first run.
 
-### 5. Run the Application
+### 6. Run the Application
 
 ```bash
 python app.py
@@ -104,12 +151,14 @@ The application will be available at:
 - Local: `http://127.0.0.1:5005`
 - Network: `http://YOUR_IP:5005`
 
-## 🔐 Default Login Credentials
+## Default Login Credentials
+
+After copying `app.example.py` to `app.py`, the default credentials are:
 
 - **Username**: `admin`
-- **Password**: `admin123`
+- **Password**: `admin123` (from example file)
 
-**⚠️ IMPORTANT: Change these credentials immediately after first login!**
+**You MUST change these credentials in `app.py` before first use!**
 
 ## Project Structure
 
@@ -214,16 +263,31 @@ The application uses SQLite by default. Database models include:
 
 ## Important Security Notes
 
+### Credential Files (CRITICAL)
+
+This project uses `.example` template files to protect sensitive credentials:
+
+- `app.example.py` → Copy to `app.py` and add your admin passwords
+- `scrapers/adsy_scraper.example.py` → Copy to `scrapers/adsy_scraper.py` and add Adsy credentials
+- `scrapers/icopify_scraper.example.py` → Copy to `scrapers/icopify_scraper.py` and add Icopify credentials
+
+**These files are in `.gitignore` and will NOT be pushed to GitHub.**
+
+### General Security Best Practices
+
 1. **Never commit**:
-   - API keys or tokens
-   - Email credentials
+   - `app.py` (contains admin passwords)
+   - `scrapers/adsy_scraper.py` (contains Adsy credentials)
+   - `scrapers/icopify_scraper.py` (contains Icopify credentials)
+   - `config.py` (contains API keys)
    - Database files with real data
-   - Configuration files with secrets
+   - Any files containing passwords or API tokens
 
 2. **Use environment variables** for sensitive data
 3. **Change default passwords** before deployment
 4. **Enable HTTPS** in production
 5. **Regular backups** of your database
+6. **Always copy from `.example` files** rather than modifying them directly
 
 ## Troubleshooting
 
