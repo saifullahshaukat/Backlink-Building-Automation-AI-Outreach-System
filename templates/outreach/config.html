@@ -1,0 +1,613 @@
+{% extends 'base.html' %}
+
+{% block title %}Outreach Configuration{% endblock %}
+{% block page_title %}Outreach Configuration{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-gear-wide-connected text-primary me-2"></i>
+                    <h5 class="mb-0">Form Configuration</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="configForm">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-person text-primary me-2"></i>First Name *
+                                </label>
+                                <input type="text" class="form-control" name="first_name" 
+                                       value="{{ config.first_name }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-person text-primary me-2"></i>Last Name *
+                                </label>
+                                <input type="text" class="form-control" name="last_name" 
+                                       value="{{ config.last_name }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-envelope text-primary me-2"></i>Email *
+                                </label>
+                                <input type="email" class="form-control" name="email" 
+                                       value="{{ config.email }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-telephone text-primary me-2"></i>Phone
+                                </label>
+                                <input type="text" class="form-control" name="phone" 
+                                       value="{{ config.get('phone', '') }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-building text-primary me-2"></i>Company
+                                </label>
+                                <input type="text" class="form-control" name="company" 
+                                       value="{{ config.get('company', '') }}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-tag text-primary me-2"></i>Subject
+                                </label>
+                                <input type="text" class="form-control" name="subject" 
+                                       value="{{ config.get('subject', 'Business Inquiry') }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-chat-text text-primary me-2"></i>Message *
+                                </label>
+                                <textarea class="form-control" name="message" rows="12" required>{{ config.message }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">
+                                    <i class="bi bi-clock text-primary me-2"></i>Delay Between Requests (seconds)
+                                </label>
+                                <input type="number" class="form-control" name="delay_between_requests" 
+                                       value="{{ config.delay_between_requests }}" min="1" max="60">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card modern-card mt-4">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-plus-square text-success me-2"></i>
+                                    <h6 class="mb-0">Custom Fields</h6>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addCustomField()">
+                                    <i class="bi bi-plus"></i> Add Field
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="customFieldsContainer">
+                                {% if config.get('custom_fields') %}
+                                {% for field in config.custom_fields %}
+                                <div class="row mb-3 custom-field-row border rounded p-3 bg-light">
+                                    <div class="col-5">
+                                        <label class="form-label small fw-medium">Field Identifier</label>
+                                        <input type="text" class="form-control form-control-sm" 
+                                               placeholder="e.g., website, budget, service" 
+                                               name="custom_field_name[]" value="{{ field.field_name }}">
+                                    </div>
+                                    <div class="col-5">
+                                        <label class="form-label small fw-medium">Field Value</label>
+                                        <input type="text" class="form-control form-control-sm" 
+                                               placeholder="Enter value" 
+                                               name="custom_field_value[]" value="{{ field.field_value }}">
+                                    </div>
+                                    <div class="col-2 d-flex align-items-end">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCustomField(this)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+                            {% if not config.get('custom_fields') %}
+                            <div class="text-center py-4 text-muted" id="emptyCustomFields">
+                                <i class="bi bi-plus-square" style="font-size: 2rem;"></i>
+                                <p class="mb-0 mt-2">No custom fields added yet</p>
+                                <small>Click "Add Field" to create custom form fields</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg px-4">
+                            <i class="bi bi-check-circle me-2"></i>Save Configuration
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="resetForm()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Reset to Defaults
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-download text-info me-2"></i>
+                    <h6 class="mb-0">Data Import</h6>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Import Source</label>
+                    <select class="form-select" id="importSource">
+                        <option value="scraped">Scraped Data</option>
+                        <option value="ahrefs_data">Ahrefs Data</option>
+                        <option value="csv">CSV Upload</option>
+                    </select>
+                </div>
+                
+                <div id="scrapedOptions" class="import-options">
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Source Filter</label>
+                        <select class="form-select form-select-sm" id="sourceFilter">
+                            <option value="all">All Sources</option>
+                            <option value="adsy">Adsy Only</option>
+                            <option value="icopify">Icopify Only</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Search URLs</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="searchTerm" placeholder="Filter URLs...">
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="csvOptions" class="import-options" style="display:none;">
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">CSV Data</label>
+                        <textarea class="form-control form-control-sm" id="csvData" rows="6" 
+                                  placeholder="Paste CSV data with URL column..."></textarea>
+                    </div>
+                </div>
+                
+                <button class="btn btn-outline-primary w-100" onclick="importUrls()">
+                    <i class="bi bi-download me-2"></i>Import URLs
+                </button>
+            </div>
+        </div>
+        
+        <div class="card modern-card mt-3">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-eye text-success me-2"></i>
+                    <h6 class="mb-0">Configuration Preview</h6>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="preview-item mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-person-circle text-primary me-2"></i>
+                        <strong class="small">Contact Information</strong>
+                    </div>
+                    <div class="ps-4">
+                        <div class="mb-1">
+                            <strong>Name:</strong> 
+                            <span id="previewName" class="text-muted">{{ config.first_name }} {{ config.last_name }}</span>
+                        </div>
+                        <div class="mb-1">
+                            <strong>Email:</strong> 
+                            <span id="previewEmail" class="text-muted">{{ config.email }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="preview-item mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-chat-text text-info me-2"></i>
+                        <strong class="small">Message Content</strong>
+                    </div>
+                    <div class="ps-4">
+                        <div class="text-muted small border rounded p-2 bg-light" id="previewMessage" 
+                             style="max-height: 120px; overflow-y: auto; font-family: monospace;">
+                            {{ config.message }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="preview-item" id="customFieldsPreview" {% if not config.get('custom_fields') %}style="display: none;"{% endif %}>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-plus-square text-success me-2"></i>
+                        <strong class="small">Custom Fields</strong>
+                    </div>
+                    <div class="ps-4" id="previewCustomFields">
+                        {% if config.get('custom_fields') %}
+                        {% for field in config.custom_fields %}
+                        <div class="mb-1">
+                            <strong>{{ field.field_name }}:</strong> 
+                            <span class="text-muted small">{{ field.field_value }}</span>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if not config.get('custom_fields') %}
+                <div class="text-center py-3 text-muted" id="emptyPreview">
+                    <i class="bi bi-eye-slash"></i>
+                    <p class="mb-0 small">Add custom fields to see preview</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('importSource').addEventListener('change', function() {
+    document.querySelectorAll('.import-options').forEach(el => el.style.display = 'none');
+    const source = this.value;
+    if (source === 'scraped' || source === 'ahrefs_data') {
+        document.getElementById('scrapedOptions').style.display = 'block';
+    } else if (source === 'csv') {
+        document.getElementById('csvOptions').style.display = 'block';
+    }
+});
+
+function addCustomField() {
+    const container = document.getElementById('customFieldsContainer');
+    const emptyState = document.getElementById('emptyCustomFields');
+    const emptyPreview = document.getElementById('emptyPreview');
+    
+    if (emptyState) emptyState.style.display = 'none';
+    if (emptyPreview) emptyPreview.style.display = 'none';
+    document.getElementById('customFieldsPreview').style.display = 'block';
+    
+    const row = document.createElement('div');
+    row.className = 'row mb-3 custom-field-row border rounded p-3 bg-light';
+    row.style.opacity = '0';
+    row.style.transform = 'translateY(-10px)';
+    row.innerHTML = `
+        <div class="col-5">
+            <label class="form-label small fw-medium">Field Identifier</label>
+            <input type="text" class="form-control form-control-sm" 
+                   placeholder="e.g., website, budget, service" name="custom_field_name[]">
+        </div>
+        <div class="col-5">
+            <label class="form-label small fw-medium">Field Value</label>
+            <input type="text" class="form-control form-control-sm" 
+                   placeholder="Enter value" name="custom_field_value[]">
+        </div>
+        <div class="col-2 d-flex align-items-end">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeCustomField(this)">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    `;
+    container.appendChild(row);
+    
+    setTimeout(() => {
+        row.style.transition = 'all 0.3s ease';
+        row.style.opacity = '1';
+        row.style.transform = 'translateY(0)';
+    }, 10);
+    
+    updatePreview();
+}
+
+function removeCustomField(btn) {
+    const row = btn.closest('.custom-field-row');
+    row.style.transition = 'all 0.3s ease';
+    row.style.opacity = '0';
+    row.style.transform = 'translateY(-10px)';
+    
+    setTimeout(() => {
+        row.remove();
+        const container = document.getElementById('customFieldsContainer');
+        if (container.children.length === 0) {
+            document.getElementById('emptyCustomFields').style.display = 'block';
+            document.getElementById('customFieldsPreview').style.display = 'none';
+            document.getElementById('emptyPreview').style.display = 'block';
+        }
+        updatePreview();
+    }, 300);
+}
+
+function updatePreview() {
+    const form = document.getElementById('configForm');
+    const formData = new FormData(form);
+    
+    const firstName = formData.get('first_name') || '';
+    const lastName = formData.get('last_name') || '';
+    document.getElementById('previewName').textContent = `${firstName} ${lastName}`.trim() || 'Not set';
+    document.getElementById('previewEmail').textContent = formData.get('email') || 'Not set';
+    document.getElementById('previewMessage').textContent = formData.get('message') || 'No message';
+    
+    const customFields = document.getElementById('previewCustomFields');
+    customFields.innerHTML = '';
+    const fieldNames = formData.getAll('custom_field_name[]');
+    const fieldValues = formData.getAll('custom_field_value[]');
+    
+    fieldNames.forEach((name, index) => {
+        if (name && fieldValues[index]) {
+            const div = document.createElement('div');
+            div.className = 'mb-1';
+            div.innerHTML = `<strong>${name}:</strong> <span class="text-muted small">${fieldValues[index]}</span>`;
+            customFields.appendChild(div);
+        }
+    });
+}
+
+document.getElementById('configForm').addEventListener('input', updatePreview);
+document.getElementById('configForm').addEventListener('change', updatePreview);
+
+document.getElementById('configForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Saving...';
+    submitBtn.disabled = true;
+    
+    const formData = new FormData(this);
+    const config = {};
+    
+    for (let [key, value] of formData.entries()) {
+        if (key.includes('[]')) continue;
+        config[key] = value;
+    }
+    
+    const customFields = [];
+    const fieldNames = formData.getAll('custom_field_name[]');
+    const fieldValues = formData.getAll('custom_field_value[]');
+    
+    fieldNames.forEach((name, index) => {
+        if (name && fieldValues[index]) {
+            customFields.push({
+                field_name: name,
+                field_value: fieldValues[index]
+            });
+        }
+    });
+    
+    config.custom_fields = customFields;
+    
+    fetch('/outreach/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Configuration saved successfully!', 'success');
+        } else {
+            showToast('Failed to save configuration: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Error saving configuration: ' + error.message, 'error');
+    })
+    .finally(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+});
+
+function importUrls() {
+    const source = document.getElementById('importSource').value;
+    const importBtn = document.querySelector('button[onclick="importUrls()"]');
+    const originalText = importBtn.innerHTML;
+    
+    importBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Importing...';
+    importBtn.disabled = true;
+    
+    const data = {
+        source_type: source,
+        source_filter: document.getElementById('sourceFilter').value,
+        search_term: document.getElementById('searchTerm').value,
+        csv_data: document.getElementById('csvData').value
+    };
+    
+    fetch('/outreach/import-urls', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message, 'success');
+        } else {
+            showToast('Import failed: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Import error: ' + error.message, 'error');
+    })
+    .finally(() => {
+        importBtn.innerHTML = originalText;
+        importBtn.disabled = false;
+    });
+}
+
+function resetForm() {
+    if (confirm('Reset form to default values? This will clear all custom fields.')) {
+        document.getElementById('configForm').reset();
+        document.getElementById('customFieldsContainer').innerHTML = '';
+        document.getElementById('emptyCustomFields').style.display = 'block';
+        document.getElementById('customFieldsPreview').style.display = 'none';
+        document.getElementById('emptyPreview').style.display = 'block';
+        updatePreview();
+        showToast('Form reset to defaults', 'info');
+    }
+}
+
+function showToast(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : type === 'warning' ? 'alert-warning' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 15000);
+}
+
+updatePreview();
+</script>
+
+<style>
+.modern-card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.2s ease;
+}
+
+.modern-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.form-control, .form-select {
+    transition: all 0.2s ease;
+    border: 1px solid #dee2e6;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.custom-field-row {
+    transition: all 0.3s ease;
+}
+
+.custom-field-row:hover {
+    background-color: rgba(13, 110, 253, 0.05) !important;
+}
+
+.preview-item {
+    border-left: 3px solid #e9ecef;
+    padding-left: 1rem;
+    margin-left: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.preview-item:hover {
+    border-left-color: #0d6efd;
+}
+
+#previewMessage {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.alert {
+    border: none;
+    border-left: 4px solid;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    border-left-color: #0dcaf0;
+    color: #0c5460;
+}
+
+.card-header {
+    background-color: rgba(13, 110, 253, 0.05);
+    border-bottom: 1px solid rgba(13, 110, 253, 0.1);
+}
+
+@media (max-width: 768px) {
+    .col-lg-8, .col-lg-4 {
+        margin-bottom: 1rem;
+    }
+    
+    .row.g-4 {
+        --bs-gutter-x: 1rem;
+        --bs-gutter-y: 1rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .custom-field-row {
+        padding: 1rem !important;
+    }
+    
+    .custom-field-row .col-5, 
+    .custom-field-row .col-2 {
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .btn-lg {
+        width: 100%;
+    }
+    
+    .preview-item {
+        margin-left: 0;
+        padding-left: 0.5rem;
+    }
+}
+</style>
+{% endblock %}

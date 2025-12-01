@@ -1,0 +1,727 @@
+{% extends "base.html" %}
+
+{% block title %}Suppression List{% endblock %}
+{% block page_title %}Suppression List Management{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card modern-card gradient-card-purple">
+            <div class="card-body text-center py-4">
+                <h2 class="text-white mb-2">
+                    <i class="bi bi-shield-x me-2"></i>Suppression List Management
+                </h2>
+                <p class="text-white-50 mb-0">Manage URLs that should be excluded from scraping and outreach activities</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-red h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-shield-x text-danger"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold" id="totalSuppressed">{{ suppression.total }}</h3>
+                        <p class="text-white-50 mb-0">Total Suppressed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-blue h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-collection text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold" id="scraperUrls">0</h3>
+                        <p class="text-white-50 mb-0">Scraper URLs</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-green h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-link-45deg text-success"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold" id="ahrefsUrls">0</h3>
+                        <p class="text-white-50 mb-0">Ahrefs URLs</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-orange h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-send text-warning"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold" id="outreachUrls">0</h3>
+                        <p class="text-white-50 mb-0">Outreach URLs</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-plus-circle text-primary me-2"></i>
+                    <h5 class="mb-0">Add URLs to Suppression List</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs" id="addTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="bulk-tab" data-bs-toggle="tab" data-bs-target="#bulk" type="button">
+                            <i class="bi bi-textarea-t me-1"></i>Bulk Text
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="csv-tab" data-bs-toggle="tab" data-bs-target="#csv" type="button">
+                            <i class="bi bi-file-earmark-csv me-1"></i>CSV Import
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="search-tab" data-bs-toggle="tab" data-bs-target="#search" type="button">
+                            <i class="bi bi-search me-1"></i>Search & Import
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content mt-3" id="addTabsContent">
+                    <div class="tab-pane fade show active" id="bulk" role="tabpanel">
+                        <form id="bulkAddForm">
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">URLs (one per line)</label>
+                                <textarea class="form-control font-monospace" id="urlsText" rows="5" placeholder="https://example.com&#10;https://another-site.com&#10;domain.com"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">Reason (optional)</label>
+                                <input type="text" class="form-control" id="reason" placeholder="e.g., Low quality, Spam, etc.">
+                            </div>
+                            <button type="submit" class="btn btn-danger">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" style="display: none;"></span>
+                                <i class="bi bi-plus-circle me-1"></i>Add to Suppression List
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="csv" role="tabpanel">
+                        <form id="csvImportForm">
+                            <div class="mb-3">
+                                <label class="form-label fw-medium">CSV File (must have URL column)</label>
+                                <input type="file" class="form-control" id="csvFile" accept=".csv">
+                                <div class="form-text">CSV should have a 'URL' column. Other columns will be ignored.</div>
+                            </div>
+                            <button type="submit" class="btn btn-danger">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" style="display: none;"></span>
+                                <i class="bi bi-upload me-1"></i>Import CSV
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="search" role="tabpanel">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Search Source</label>
+                            <select class="form-select" id="searchSource">
+                                <option value="scraper_all">Scraper Data (All)</option>
+                                <option value="scraper_adsy">Scraper Data (Adsy)</option>
+                                <option value="scraper_icopify">Scraper Data (Icopify)</option>
+                                <option value="ahrefs_urls">Ahrefs URLs</option>
+                                <option value="ahrefs_data">Ahrefs Data</option>
+                                <option value="outreach_data">Outreach Data</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Search Term</label>
+                            <input type="text" class="form-control" id="searchTerm" placeholder="Enter domain or URL part">
+                        </div>
+                        <button type="button" class="btn btn-primary" id="searchBtn">
+                            <i class="bi bi-search me-1"></i>Search
+                        </button>
+                        
+                        <div id="searchResults" class="mt-3" style="display: none;">
+                            <div class="card border-0 bg-light">
+                                <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center">
+                                    <label class="form-label mb-0 fw-medium">Search Results</label>
+                                    <div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllBtn">Select All</button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="clearAllBtn">Clear All</button>
+                                    </div>
+                                </div>
+                                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                                    <div id="urlResults"></div>
+                                </div>
+                                <div class="card-footer bg-transparent border-0">
+                                    <button type="button" class="btn btn-danger" id="addSelectedBtn" disabled>
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" style="display: none;"></span>
+                                        <i class="bi bi-plus-circle me-1"></i>Add Selected to Suppression
+                                    </button>
+                                    <span class="ms-2 text-muted" id="selectedCount">0 selected</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card modern-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-list-ul text-primary me-2"></i>
+                    <h5 class="mb-0">Suppression List</h5>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <input type="text" class="form-control form-control-sm" style="width: 200px;" id="tableSearch" placeholder="Search suppressed URLs...">
+                    <button class="btn btn-sm btn-outline-danger" id="bulkDeleteBtn" disabled>
+                        <i class="bi bi-trash me-1"></i>Delete Selected
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card-body p-0">
+                <div style="max-height: 500px; overflow-y: auto;">
+                    <table class="table table-hover data-table mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th class="border-0" width="40px">
+                                    <input type="checkbox" class="form-check-input" id="selectAllSuppressed">
+                                </th>
+                                <th class="border-0">URL</th>
+                                <th class="border-0">Reason</th>
+                                <th class="border-0">Added</th>
+                                <th class="border-0" width="80px">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="suppressionTableBody">
+                            {% for item in suppression.items %}
+                            <tr class="table-row">
+                                <td><input type="checkbox" class="form-check-input row-checkbox" value="{{ item.id }}"></td>
+                                <td class="url-cell">
+                                    <div class="d-flex align-items-center">
+                                        <div class="url-icon bg-danger bg-opacity-10 rounded-circle me-3 flex-shrink-0">
+                                            <i class="bi bi-shield-x text-danger"></i>
+                                        </div>
+                                        <div class="min-width-0">
+                                            <div class="text-truncate" title="{{ item.url }}">
+                                                <small class="text-muted">{{ item.url }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-lg {% if item.reason %}bg-secondary{% else %}bg-light text-muted{% endif %}">
+                                        {{ item.reason or 'No reason' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ item.created_at.strftime('%b %d, %Y') }}</small>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteUrl({{ item.id }})" title="Delete URL">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="bi bi-shield-x display-4 text-muted mb-3"></i>
+                                        <h4 class="text-muted">No Suppressed URLs</h4>
+                                        <p class="text-muted mb-4">Start by adding URLs to suppress from your campaigns</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedUrls = new Set();
+
+function showNotification(message, type = 'info') {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : type === 'warning' ? 'alert-warning' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 15000);
+}
+
+async function loadStats() {
+    try {
+        const response = await fetch('/api/suppression-stats');
+        const data = await response.json();
+        document.getElementById('scraperUrls').textContent = data.scraper_count || 0;
+        document.getElementById('ahrefsUrls').textContent = data.ahrefs_count || 0;
+        document.getElementById('outreachUrls').textContent = data.outreach_count || 0;
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+document.getElementById('bulkAddForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const spinner = btn.querySelector('.spinner-border');
+    
+    spinner.style.display = 'inline-block';
+    btn.disabled = true;
+    
+    const urls = document.getElementById('urlsText').value;
+    const reason = document.getElementById('reason').value;
+    
+    try {
+        const response = await fetch('/suppression/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ urls: urls.split('\n'), reason: reason })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            showNotification(result.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Error: ' + result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('Error adding URLs: ' + error.message, 'error');
+    } finally {
+        spinner.style.display = 'none';
+        btn.disabled = false;
+    }
+});
+
+document.getElementById('csvImportForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const spinner = btn.querySelector('.spinner-border');
+    const file = document.getElementById('csvFile').files[0];
+    
+    if (!file) {
+        showNotification('Please select a CSV file', 'error');
+        return;
+    }
+    
+    spinner.style.display = 'inline-block';
+    btn.disabled = true;
+    
+    const formData = new FormData();
+    formData.append('csv_file', file);
+    
+    try {
+        const response = await fetch('/suppression/add', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            showNotification('CSV imported successfully', 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Error importing CSV', 'error');
+        }
+    } catch (error) {
+        showNotification('Error importing CSV: ' + error.message, 'error');
+    } finally {
+        spinner.style.display = 'none';
+        btn.disabled = false;
+    }
+});
+
+document.getElementById('searchBtn').addEventListener('click', async () => {
+    const source = document.getElementById('searchSource').value;
+    const term = document.getElementById('searchTerm').value;
+    
+    try {
+        const response = await fetch(`/api/search-urls?source=${source}&term=${encodeURIComponent(term)}`);
+        const data = await response.json();
+        
+        const resultsContainer = document.getElementById('urlResults');
+        resultsContainer.innerHTML = '';
+        selectedUrls.clear();
+        
+        if (data.urls && data.urls.length > 0) {
+            data.urls.forEach(url => {
+                const item = document.createElement('div');
+                item.className = 'form-check mb-2';
+                item.innerHTML = `
+                    <input class="form-check-input search-url-checkbox" type="checkbox" value="${url}" id="url-${btoa(url)}">
+                    <label class="form-check-label w-100" for="url-${btoa(url)}">
+                        <small class="text-muted">${url}</small>
+                    </label>
+                `;
+                resultsContainer.appendChild(item);
+            });
+            
+            document.getElementById('searchResults').style.display = 'block';
+            updateSelectedCount();
+        } else {
+            resultsContainer.innerHTML = '<div class="text-muted text-center p-3">No URLs found</div>';
+            document.getElementById('searchResults').style.display = 'block';
+        }
+    } catch (error) {
+        showNotification('Error searching URLs: ' + error.message, 'error');
+    }
+});
+
+document.getElementById('selectAllBtn').addEventListener('click', () => {
+    const checkboxes = document.querySelectorAll('.search-url-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = true;
+        selectedUrls.add(cb.value);
+    });
+    updateSelectedCount();
+});
+
+document.getElementById('clearAllBtn').addEventListener('click', () => {
+    const checkboxes = document.querySelectorAll('.search-url-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    selectedUrls.clear();
+    updateSelectedCount();
+});
+
+document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('search-url-checkbox')) {
+        if (e.target.checked) {
+            selectedUrls.add(e.target.value);
+        } else {
+            selectedUrls.delete(e.target.value);
+        }
+        updateSelectedCount();
+    }
+    
+    if (e.target.classList.contains('row-checkbox')) {
+        updateBulkDeleteBtn();
+    }
+});
+
+document.getElementById('selectAllSuppressed').addEventListener('change', (e) => {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => cb.checked = e.target.checked);
+    updateBulkDeleteBtn();
+});
+
+document.getElementById('addSelectedBtn').addEventListener('click', async () => {
+    if (selectedUrls.size === 0) return;
+    
+    const btn = document.getElementById('addSelectedBtn');
+    const spinner = btn.querySelector('.spinner-border');
+    
+    spinner.style.display = 'inline-block';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch('/suppression/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ urls: Array.from(selectedUrls) })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            showNotification(result.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Error: ' + result.message, 'error');
+        }
+    } catch (error) {
+        showNotification('Error adding URLs: ' + error.message, 'error');
+    } finally {
+        spinner.style.display = 'none';
+        btn.disabled = false;
+    }
+});
+
+document.getElementById('bulkDeleteBtn').addEventListener('click', async () => {
+    const selected = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+    
+    if (selected.length === 0) return;
+    if (!confirm(`Delete ${selected.length} suppressed URLs?`)) return;
+    
+    try {
+        const response = await fetch('/suppression/bulk_delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: selected })
+        });
+        
+        const result = await response.json();
+        if (result.status === 'success') {
+            showNotification(`Deleted ${result.deleted} URLs`, 'success');
+            setTimeout(() => location.reload(), 1500);
+        }
+    } catch (error) {
+        showNotification('Error deleting URLs: ' + error.message, 'error');
+    }
+});
+
+function updateSelectedCount() {
+    document.getElementById('selectedCount').textContent = `${selectedUrls.size} selected`;
+    document.getElementById('addSelectedBtn').disabled = selectedUrls.size === 0;
+}
+
+function updateBulkDeleteBtn() {
+    const selected = document.querySelectorAll('.row-checkbox:checked').length;
+    document.getElementById('bulkDeleteBtn').disabled = selected === 0;
+}
+
+async function deleteUrl(id) {
+    if (!confirm('Delete this suppressed URL?')) return;
+    
+    try {
+        const response = await fetch(`/suppression/delete/${id}`, { method: 'POST' });
+        if (response.ok) {
+            showNotification('URL deleted successfully', 'success');
+            setTimeout(() => location.reload(), 1500);
+        }
+    } catch (error) {
+        showNotification('Error deleting URL: ' + error.message, 'error');
+    }
+}
+
+document.getElementById('tableSearch').addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#suppressionTableBody tr');
+    
+    rows.forEach(row => {
+        const url = row.cells[1]?.textContent?.toLowerCase() || '';
+        row.style.display = url.includes(term) ? '' : 'none';
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadStats();
+    
+    document.querySelectorAll('.table-row').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-1px)';
+            this.style.boxShadow = 'var(--shadow-sm)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+});
+</script>
+
+<style>
+.gradient-card-red {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-green {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-blue {
+    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-purple {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-orange {
+    background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.url-icon {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.modern-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.modern-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.data-table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--bs-gray-700);
+    padding: 1rem 0.75rem;
+}
+
+.table-row {
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.table-row:hover {
+    background-color: rgba(220, 53, 69, 0.05);
+    border-left-color: var(--bs-danger);
+}
+
+.url-cell {
+    max-width: 300px;
+}
+
+.badge-lg {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+.btn {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(248, 249, 250, 0.8);
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #e3e6f0;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+}
+
+.font-monospace {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.nav-tabs .nav-link {
+    border-radius: 8px 8px 0 0;
+    border: none;
+    color: var(--bs-gray-600);
+    transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: transparent;
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.nav-tabs .nav-link.active {
+    background-color: var(--bs-primary);
+    color: white;
+    border-color: var(--bs-primary);
+}
+
+@media (max-width: 768px) {
+    .modern-card:hover {
+        transform: none;
+    }
+    
+    .table-row:hover {
+        transform: none;
+    }
+    
+    .btn:hover {
+        transform: none;
+    }
+}
+</style>
+{% endblock %}

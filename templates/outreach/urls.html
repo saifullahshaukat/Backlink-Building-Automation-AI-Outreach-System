@@ -1,0 +1,626 @@
+{% extends 'base.html' %}
+
+{% block title %}Outreach URLs{% endblock %}
+{% block page_title %}Outreach URLs{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-green h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-link-45deg text-success"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ pagination.total or 0 }}</h3>
+                        <p class="text-white-50 mb-0">Total URLs</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-blue h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-check-circle text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ pagination.items|selectattr('status', 'equalto', 'success')|list|length }}</h3>
+                        <p class="text-white-50 mb-0">Success</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-orange h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-clock text-warning"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ pagination.items|selectattr('status', 'equalto', 'pending')|list|length }}</h3>
+                        <p class="text-white-50 mb-0">Pending</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-purple h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-x-circle text-danger"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ pagination.items|selectattr('status', 'equalto', 'error')|list|length }}</h3>
+                        <p class="text-white-50 mb-0">Errors</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-search text-primary me-2"></i>
+                    <h5 class="mb-0">Search & Filter</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Search URLs</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" name="search" value="{{ search or '' }}" placeholder="Search URLs..." class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium">Status Filter</label>
+                        <select name="status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="success" {% if status_filter == 'success' %}selected{% endif %}>Success</option>
+                            <option value="error" {% if status_filter == 'error' %}selected{% endif %}>Error</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search me-1"></i>Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card modern-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-plus-circle text-success me-2"></i>
+                    <h5 class="mb-0">Actions</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-success w-100 mb-3" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="bi bi-plus-circle me-2"></i>Import URLs
+                </button>
+                <button class="btn btn-danger w-100" id="bulkDeleteBtn" style="display:none;">
+                    <i class="bi bi-trash me-2"></i>Delete Selected
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card modern-card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-table text-primary me-2"></i>
+                <h5 class="mb-0">URL Records</h5>
+            </div>
+            {% if pagination.items %}
+            <div class="text-muted small">
+                Showing {{ (pagination.page - 1) * 50 + 1 }}-{{ (pagination.page - 1) * 50 + pagination.items|length }} of {{ pagination.total }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover data-table mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="border-0"><input type="checkbox" id="selectAll"></th>
+                        <th class="border-0">URL</th>
+                        <th class="border-0">Status</th>
+                        <th class="border-0">Form Found</th>
+                        <th class="border-0">Form Submitted</th>
+                        <th class="border-0">Created</th>
+                        <th class="border-0">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in pagination.items %}
+                    <tr class="table-row">
+                        <td><input type="checkbox" name="url_ids" value="{{ record.id }}"></td>
+                        <td class="url-cell">
+                            <div class="d-flex align-items-center">
+                                <div class="url-icon bg-primary bg-opacity-10 rounded-circle me-2 flex-shrink-0">
+                                    <i class="bi bi-globe text-primary"></i>
+                                </div>
+                                <div class="min-width-0">
+                                    <a href="{{ record.url }}" target="_blank" class="text-primary text-decoration-none fw-medium text-truncate d-block">
+                                        {{ record.url[:50] }}{% if record.url|length > 50 %}...{% endif %}
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {% if record.status == 'success' %}bg-success{% elif record.status == 'error' %}bg-danger{% else %}bg-warning{% endif %} badge-lg">
+                                {{ record.status.title() }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="{% if record.form_found %}text-success{% else %}text-muted{% endif %}">
+                                <i class="bi bi-{% if record.form_found %}check-circle{% else %}x-circle{% endif %} me-1"></i>
+                                {{ 'Yes' if record.form_found else 'No' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="{% if record.form_submitted %}text-success{% else %}text-muted{% endif %}">
+                                <i class="bi bi-{% if record.form_submitted %}check-circle{% else %}x-circle{% endif %} me-1"></i>
+                                {{ 'Yes' if record.form_submitted else 'No' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="text-muted small">{{ record.created_at.strftime('%m/%d/%Y') }}</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteRecord({{ record.id }})" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="empty-state">
+                                <i class="bi bi-inbox display-4 text-muted mb-3"></i>
+                                <h4 class="text-muted">No URLs Found</h4>
+                                <p class="text-muted mb-4">Start by importing URLs for outreach</p>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#importModal">
+                                    <i class="bi bi-plus-circle me-1"></i>Import URLs
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    {% if pagination.pages > 1 %}
+    <div class="card-footer bg-light border-0">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+                Page {{ pagination.page }} of {{ pagination.pages }}
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('outreach_urls', page=pagination.prev_num, search=search, status=status_filter) }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in pagination.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != pagination.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('outreach_urls', page=page_num, search=search, status=status_filter) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('outreach_urls', page=pagination.next_num, search=search, status=status_filter) }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>Import URLs for Outreach
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Import Source</label>
+                    <select class="form-select" id="importSource">
+                        <option value="manual">Manual Input</option>
+                        <option value="scraped">Scraped Data</option>
+                        <option value="ahrefs_data">Ahrefs Data</option>
+                        <option value="csv">CSV Upload</option>
+                    </select>
+                </div>
+                
+                <div id="manualOptions" class="import-options">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Enter URLs (one per line)</label>
+                        <textarea class="form-control" id="manualUrls" rows="8" 
+                                placeholder="example.com&#10;another-site.com&#10;google.com"></textarea>
+                        <small class="text-muted">Enter one URL per line. Protocol (http/https) is optional.</small>
+                    </div>
+                </div>
+                
+                <div id="scrapedOptions" class="import-options" style="display:none;">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Source Filter</label>
+                        <select class="form-select" id="sourceFilter">
+                            <option value="all">All Sources</option>
+                            <option value="adsy">Adsy Only</option>
+                            <option value="icopify">Icopify Only</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Search Term</label>
+                        <input type="text" class="form-control" id="searchTerm" placeholder="Search URLs...">
+                    </div>
+                </div>
+                
+                <div id="csvOptions" class="import-options" style="display:none;">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">CSV Data (must contain URL column)</label>
+                        <textarea class="form-control font-monospace" id="csvData" rows="10" 
+                                placeholder="URL,Other Field&#10;https://example.com,value&#10;https://example2.com,value2"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick="importUrls()">
+                    <i class="bi bi-upload me-1"></i>Import URLs
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showNotification(message, type = 'info') {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : type === 'warning' ? 'alert-warning' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 15000);
+}
+
+document.getElementById('importSource').addEventListener('change', function() {
+    const source = this.value;
+    document.querySelectorAll('.import-options').forEach(el => el.style.display = 'none');
+    
+    if (source === 'manual') {
+        document.getElementById('manualOptions').style.display = 'block';
+    } else if (source === 'scraped' || source === 'ahrefs_data') {
+        document.getElementById('scrapedOptions').style.display = 'block';
+    } else if (source === 'csv') {
+        document.getElementById('csvOptions').style.display = 'block';
+    }
+});
+
+function importUrls() {
+    const source = document.getElementById('importSource').value;
+    const data = {
+        source_type: source,
+        source_filter: document.getElementById('sourceFilter').value,
+        search_term: document.getElementById('searchTerm').value,
+        csv_data: document.getElementById('csvData').value,
+        manual_urls: document.getElementById('manualUrls').value
+    };
+    
+    fetch('/outreach/import-urls', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Import failed: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Import failed: ' + error.message, 'error');
+    });
+}
+
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('input[name="url_ids"]');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+    updateBulkButtons();
+});
+
+document.querySelectorAll('input[name="url_ids"]').forEach(cb => {
+    cb.addEventListener('change', updateBulkButtons);
+});
+
+function updateBulkButtons() {
+    const selected = document.querySelectorAll('input[name="url_ids"]:checked');
+    document.getElementById('bulkDeleteBtn').style.display = selected.length > 0 ? 'block' : 'none';
+}
+
+document.getElementById('bulkDeleteBtn').addEventListener('click', function() {
+    const selected = Array.from(document.querySelectorAll('input[name="url_ids"]:checked')).map(cb => cb.value);
+    if (confirm(`Delete ${selected.length} selected URLs?`)) {
+        fetch('/outreach/delete-urls', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: selected })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`Deleted ${data.deleted} URLs`, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification('Delete failed: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Delete failed: ' + error.message, 'error');
+        });
+    }
+});
+
+function deleteRecord(id) {
+    if (confirm('Delete this URL?')) {
+        fetch('/outreach/delete-urls', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: [id] })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('URL deleted successfully', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification('Delete failed: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Delete failed: ' + error.message, 'error');
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.table-row').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-1px)';
+            this.style.boxShadow = 'var(--shadow-sm)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+});
+</script>
+
+<style>
+.gradient-card-green {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-blue {
+    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-purple {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-orange {
+    background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.url-icon {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.modern-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.modern-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.data-table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--bs-gray-700);
+    padding: 1rem 0.75rem;
+}
+
+.table-row {
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.table-row:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    border-left-color: var(--bs-primary);
+}
+
+.url-cell {
+    max-width: 300px;
+}
+
+.badge-lg {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+.btn {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(248, 249, 250, 0.8);
+}
+
+.modal-content {
+    border: none;
+    box-shadow: var(--shadow-lg);
+    border-radius: 12px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #e3e6f0;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+}
+
+.font-monospace {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .modern-card:hover {
+        transform: none;
+    }
+    
+    .table-row:hover {
+        transform: none;
+    }
+    
+    .btn:hover {
+        transform: none;
+    }
+}
+</style>
+{% endblock %}

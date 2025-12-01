@@ -1,0 +1,858 @@
+{% extends 'base.html' %}
+
+{% block title %}Outreach Statistics{% endblock %}
+{% block page_title %}Outreach Statistics{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="card modern-card stat-card bg-primary text-white">
+            <div class="card-body text-center py-4">
+                <div class="stat-icon mb-2">
+                    <i class="bi bi-bullseye"></i>
+                </div>
+                <h3 class="mb-1">{{ stats.total_urls }}</h3>
+                <small class="opacity-75">Total URLs</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="card modern-card stat-card bg-success text-white">
+            <div class="card-body text-center py-4">
+                <div class="stat-icon mb-2">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <h3 class="mb-1">{{ stats.success_urls }}</h3>
+                <small class="opacity-75">Successful</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="card modern-card stat-card bg-warning text-white">
+            <div class="card-body text-center py-4">
+                <div class="stat-icon mb-2">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <h3 class="mb-1">{{ stats.pending_urls }}</h3>
+                <small class="opacity-75">Pending</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="card modern-card stat-card bg-danger text-white">
+            <div class="card-body text-center py-4">
+                <div class="stat-icon mb-2">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <h3 class="mb-1">{{ stats.error_urls }}</h3>
+                <small class="opacity-75">Errors</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="card modern-card stat-card bg-info text-white">
+            <div class="card-body text-center py-4">
+                <div class="stat-icon mb-2">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <h3 class="mb-1">{{ stats.success_rate }}%</h3>
+                <small class="opacity-75">Success Rate</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="card modern-card stat-card bg-secondary text-white">
+            <div class="card-body text-center py-4">
+                <div class="stat-icon mb-2">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h3 class="mb-1">{{ stats.form_found_rate }}%</h3>
+                <small class="opacity-75">Form Found Rate</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-pie-chart text-primary me-2"></i>
+                    <h5 class="mb-0">Status Distribution</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="position: relative; height: 300px;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-robot text-success me-2"></i>
+                    <h5 class="mb-0">Current Bot Status</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 text-center mb-3">
+                    <div class="col-6 col-sm-3">
+                        <div class="bot-stat-item">
+                            <div class="h4 mb-1 text-primary" id="botStatus">{{ stats.bot_stats.status }}</div>
+                            <small class="text-muted">Status</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="bot-stat-item">
+                            <div class="h4 mb-1 text-info" id="botProcessed">{{ stats.bot_stats.urls_processed }}</div>
+                            <small class="text-muted">Processed</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="bot-stat-item">
+                            <div class="h4 mb-1 text-success" id="botFormsFound">{{ stats.bot_stats.forms_found }}</div>
+                            <small class="text-muted">Forms Found</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-sm-3">
+                        <div class="bot-stat-item">
+                            <div class="h4 mb-1 text-warning" id="botSubmitted">{{ stats.bot_stats.forms_submitted }}</div>
+                            <small class="text-muted">Submitted</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="current-url-container bg-light rounded p-3 text-center">
+                    <small class="text-muted d-block mb-1">Current URL:</small>
+                    <code class="text-primary small" id="currentUrl">{{ stats.bot_stats.current_url or 'Idle' }}</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-graph-up-arrow text-success me-2"></i>
+                    <h5 class="mb-0">Daily Performance</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="position: relative; height: 350px;">
+                    <canvas id="dailyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-gear-wide-connected text-info me-2"></i>
+                    <h5 class="mb-0">Execution Modes</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                {% for mode, data in stats.execution_modes.items() %}
+                <div class="execution-mode-item d-flex justify-content-between align-items-center p-3 mb-2 bg-light rounded">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-cpu text-primary me-2"></i>
+                        <span class="text-capitalize fw-medium">{{ mode }}</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-primary">{{ data.total }}</span>
+                        <span class="badge bg-success">{{ data.success }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if not stats.execution_modes %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-gear" style="font-size: 2rem;"></i>
+                    <p class="mb-0 mt-2">No execution data available</p>
+                    <small>Run some operations to see mode statistics</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        <h5 class="mb-0">Recent Successes</h5>
+                    </div>
+                    <span class="badge bg-success">{{ stats.recent_successes|length }}</span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="success-list" style="max-height: 400px; overflow-y: auto;">
+                    {% if stats.recent_successes %}
+                    {% for success in stats.recent_successes %}
+                    <div class="success-item border-bottom p-3 d-flex align-items-start">
+                        <div class="success-icon bg-success bg-opacity-10 rounded-circle me-3 flex-shrink-0 mt-1">
+                            <i class="bi bi-check-circle text-success"></i>
+                        </div>
+                        <div class="flex-grow-1 min-width-0">
+                            <div class="fw-medium mb-1 text-truncate" title="{{ success.url }}">
+                                {{ success.url[:60] }}{% if success.url|length > 60 %}...{% endif %}
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <small class="text-muted">{{ success.created_at.strftime('%m/%d/%Y %H:%M') }}</small>
+                                {% if success.form_found %}
+                                <span class="badge bg-success badge-sm">Form Found</span>
+                                {% endif %}
+                                {% if success.form_submitted %}
+                                <span class="badge bg-primary badge-sm">Submitted</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-check-circle" style="font-size: 3rem;"></i>
+                        <h6 class="mt-3">No recent successes</h6>
+                        <p class="mb-0">Successful operations will appear here</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                        <h5 class="mb-0">Recent Errors</h5>
+                    </div>
+                    <span class="badge bg-danger">{{ stats.recent_errors|length }}</span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="error-list" style="max-height: 400px; overflow-y: auto;">
+                    {% if stats.recent_errors %}
+                    {% for error in stats.recent_errors %}
+                    <div class="error-item border-bottom p-3 d-flex align-items-start">
+                        <div class="error-icon bg-danger bg-opacity-10 rounded-circle me-3 flex-shrink-0 mt-1">
+                            <i class="bi bi-x-circle text-danger"></i>
+                        </div>
+                        <div class="flex-grow-1 min-width-0">
+                            <div class="fw-medium mb-1 text-truncate" title="{{ error.url }}">
+                                {{ error.url[:60] }}{% if error.url|length > 60 %}...{% endif %}
+                            </div>
+                            <small class="text-muted d-block mb-1">{{ error.created_at.strftime('%m/%d/%Y %H:%M') }}</small>
+                            {% if error.error_message %}
+                            <div class="text-danger small mt-1 p-2 bg-danger bg-opacity-10 rounded">
+                                {{ error.error_message[:100] }}{% if error.error_message|length > 100 %}...{% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-shield-check" style="font-size: 3rem;"></i>
+                        <h6 class="mt-3">No recent errors</h6>
+                        <p class="mb-0">Error reports will appear here</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card modern-card">
+<div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-list-check text-primary me-2"></i>
+                        <h5 class="mb-0">Processed URLs</h5>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary active" id="showAllProcessed">All</button>
+                        <button class="btn btn-outline-success" id="showCompletedProcessed">Completed</button>
+                        <button class="btn btn-outline-danger" id="showErrorProcessed">Errors</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">URL</th>
+                                <th>Status</th>
+                                <th>Form Found</th>
+                                <th>Form Submitted</th>
+                                <th>Screenshot</th>
+                                <th>Processed At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if stats.processed_urls %}
+                            {% for record in stats.processed_urls %}
+                            <tr class="processed-row" data-status="{{ record.status }}">
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="activity-icon me-2">
+                                            {% if record.status == 'completed' %}
+                                            <i class="bi bi-check-circle text-success"></i>
+                                            {% elif record.status == 'error' %}
+                                            <i class="bi bi-x-circle text-danger"></i>
+                                            {% elif record.status == 'form_found_not_submitted' %}
+                                            <i class="bi bi-exclamation-circle text-warning"></i>
+                                            {% else %}
+                                            <i class="bi bi-clock text-muted"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="min-width-0">
+                                            <div class="text-truncate fw-medium" title="{{ record.url }}">
+                                                {{ record.url[:70] }}{% if record.url|length > 70 %}...{% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if record.status == 'completed' else 'danger' if record.status == 'error' else 'warning' if record.status == 'form_found_not_submitted' else 'secondary' }}">
+                                        {{ record.status.replace('_', ' ')|title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if record.form_found %}
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    {% else %}
+                                    <i class="bi bi-x-circle text-muted"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.form_submitted %}
+                                    <i class="bi bi-check-circle text-primary"></i>
+                                    {% else %}
+                                    <i class="bi bi-x-circle text-muted"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.screenshot_path %}
+                                    <button class="btn btn-sm btn-outline-info" onclick="viewScreenshot({{ record.id }})">
+                                        <i class="bi bi-image"></i> View
+                                    </button>
+                                    {% else %}
+                                    <span class="text-muted small">No screenshot</span>
+                                    {% endif %}
+                                </td>
+                                <td class="pe-4">
+                                    <small class="text-muted">{{ record.created_at.strftime('%m/%d/%Y %H:%M') }}</small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-list-check" style="font-size: 3rem;"></i>
+                                    <h6 class="mt-3">No processed URLs</h6>
+                                    <p class="mb-0">Processed URLs will appear here once operations complete</p>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+const statusChart = new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Completed', 'Pending', 'Error', 'Form Found Not Submitted', 'No Form Found'],
+        datasets: [{
+            data: [{{ stats.success_urls }}, {{ stats.pending_urls }}, {{ stats.error_urls }}, {{ stats.form_found_not_submitted }}, {{ stats.no_form_found }}],
+            backgroundColor: ['#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6c757d'],
+            borderWidth: 0,
+            hoverBorderWidth: 2,
+            hoverBorderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            }
+        },
+        cutout: '60%'
+    }
+});
+
+const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+const dailyData = {{ stats.daily_stats|tojson }};
+const dates = Object.keys(dailyData).reverse().slice(-7);
+const totalData = dates.map(date => dailyData[date].total);
+const successData = dates.map(date => dailyData[date].success);
+const formFoundData = dates.map(date => dailyData[date].form_found);
+
+const dailyChart = new Chart(dailyCtx, {
+    type: 'line',
+    data: {
+        labels: dates,
+        datasets: [{
+            label: 'Total',
+            data: totalData,
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6
+        }, {
+            label: 'Success',
+            data: successData,
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6
+        }, {
+            label: 'Forms Found',
+            data: formFoundData,
+            borderColor: '#17a2b8',
+            backgroundColor: 'rgba(23, 162, 184, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    usePointStyle: true,
+                    padding: 20
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    color: 'rgba(0,0,0,0.05)'
+                }
+            },
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0,0,0,0.05)'
+                }
+            }
+        },
+        interaction: {
+            intersect: false,
+            mode: 'index'
+        }
+    }
+});
+
+function updateBotStats() {
+    fetch('/outreach/api/stats')
+    .then(response => response.json())
+    .then(stats => {
+        document.getElementById('botStatus').textContent = stats.status;
+        document.getElementById('botProcessed').textContent = stats.urls_processed;
+        document.getElementById('botFormsFound').textContent = stats.forms_found;
+        document.getElementById('botSubmitted').textContent = stats.forms_submitted;
+        document.getElementById('currentUrl').textContent = stats.current_url || 'Idle';
+    })
+    .catch(error => console.error('Error updating bot stats:', error));
+}
+
+document.getElementById('showAllActivity').addEventListener('click', function() {
+    filterActivity('all');
+    updateFilterButtons(this);
+});
+
+document.getElementById('showSuccessActivity').addEventListener('click', function() {
+    filterActivity('success');
+    updateFilterButtons(this);
+});
+
+document.getElementById('showErrorActivity').addEventListener('click', function() {
+    filterActivity('error');
+    updateFilterButtons(this);
+});
+
+function filterActivity(filter) {
+    const rows = document.querySelectorAll('.activity-row');
+    rows.forEach(row => {
+        const status = row.dataset.status;
+        if (filter === 'all') {
+            row.style.display = '';
+        } else if (filter === 'success' && status === 'success') {
+            row.style.display = '';
+        } else if (filter === 'error' && status.includes('error')) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function updateFilterButtons(activeBtn) {
+    document.querySelectorAll('#showAllActivity, #showSuccessActivity, #showErrorActivity').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    activeBtn.classList.add('active');
+}
+
+function showToast(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : type === 'warning' ? 'alert-warning' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 15000);
+}
+
+document.getElementById('showAllActivity').addEventListener('click', function() {
+    filterProcessed('all');
+    updateProcessedFilterButtons(this);
+});
+
+document.getElementById('showSuccessActivity').addEventListener('click', function() {
+    filterProcessed('completed');
+    updateProcessedFilterButtons(this);
+});
+
+document.getElementById('showErrorActivity').addEventListener('click', function() {
+    filterProcessed('error');
+    updateProcessedFilterButtons(this);
+});
+
+document.getElementById('showAllProcessed').addEventListener('click', function() {
+    filterProcessed('all');
+    updateProcessedFilterButtons(this);
+});
+
+document.getElementById('showCompletedProcessed').addEventListener('click', function() {
+    filterProcessed('completed');
+    updateProcessedFilterButtons(this);
+});
+
+document.getElementById('showErrorProcessed').addEventListener('click', function() {
+    filterProcessed('error');
+    updateProcessedFilterButtons(this);
+});
+
+function filterProcessed(filter) {
+    const rows = document.querySelectorAll('.processed-row');
+    rows.forEach(row => {
+        const status = row.dataset.status;
+        if (filter === 'all') {
+            row.style.display = '';
+        } else if (filter === 'completed' && status === 'completed') {
+            row.style.display = '';
+        } else if (filter === 'error' && status === 'error') {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function updateProcessedFilterButtons(activeBtn) {
+    document.querySelectorAll('#showAllProcessed, #showCompletedProcessed, #showErrorProcessed').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    activeBtn.classList.add('active');
+}
+
+function viewScreenshot(recordId) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'screenshotModal';
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Processing Screenshot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="/outreach/screenshot/${recordId}" class="img-fluid" alt="Processing Screenshot" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+CiAgPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIHNjcmVlbnNob3QgYXZhaWxhYmxlPC90ZXh0Pgo8L3N2Zz4K';" style="max-height: 80vh;">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bootstrapModal = new bootstrap.Modal(modal);
+    bootstrapModal.show();
+    
+    modal.addEventListener('hidden.bs.modal', function() {
+        document.body.removeChild(modal);
+    });
+}
+
+setInterval(updateBotStats, 5000);
+updateBotStats();
+</script>
+
+<style>
+.modern-card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+}
+
+.modern-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.stat-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    opacity: 0.8;
+}
+
+.bot-stat-item {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.02);
+    transition: all 0.2s ease;
+}
+
+.bot-stat-item:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+    transform: translateY(-2px);
+}
+
+.current-url-container {
+    transition: all 0.2s ease;
+}
+
+.current-url-container:hover {
+    background-color: rgba(13, 110, 253, 0.05) !important;
+}
+
+.execution-mode-item {
+    transition: all 0.2s ease;
+}
+
+.execution-mode-item:hover {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+    transform: translateX(5px);
+}
+
+.success-item, .error-item {
+    transition: all 0.2s ease;
+}
+
+.success-item:hover, .error-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.success-icon, .error-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.activity-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.activity-row {
+    transition: all 0.2s ease;
+}
+
+.activity-row:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+}
+
+.badge-sm {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.chart-container canvas {
+    max-height: 100%;
+}
+
+.success-list::-webkit-scrollbar,
+.error-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.success-list::-webkit-scrollbar-track,
+.error-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.success-list::-webkit-scrollbar-thumb,
+.error-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.success-list::-webkit-scrollbar-thumb:hover,
+.error-list::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
+
+@media (max-width: 768px) {
+    .row.g-4 {
+        --bs-gutter-x: 1rem;
+        --bs-gutter-y: 1rem;
+    }
+    
+    .stat-card .card-body {
+        padding: 1.5rem 1rem !important;
+    }
+    
+    .stat-icon {
+        font-size: 1.5rem;
+    }
+    
+    .stat-card h3 {
+        font-size: 1.5rem;
+    }
+    
+    .bot-stat-item {
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .chart-container {
+        height: 250px !important;
+    }
+    
+    .success-list, .error-list {
+        max-height: 300px !important;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .activity-row td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .col-6:nth-child(odd) {
+        padding-right: 0.5rem;
+    }
+    
+    .col-6:nth-child(even) {
+        padding-left: 0.5rem;
+    }
+    
+    .success-item, .error-item {
+        padding: 1rem !important;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.25rem;
+    }
+    
+    .table th, .table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .card-header .btn-group-sm {
+        flex-direction: column;
+    }
+    
+    .card-header .btn-group-sm .btn {
+        width: 100%;
+        margin-bottom: 0.25rem;
+    }
+}
+</style>
+{% endblock %}

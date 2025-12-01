@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %} - Analytics Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        .flash-messages {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            z-index: 9999;
+            width: 350px;
+            max-width: calc(100vw - 40px);
+        }
+        
+        .flash-messages .modern-alert {
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            padding: 16px 20px;
+            animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid;
+        }
+        
+        .flash-messages .alert-success {
+            border-left-color: #1a7f37;
+            background: linear-gradient(135deg, rgba(26, 127, 55, 0.15) 0%, rgba(255, 255, 255, 0.95) 100%);
+        }
+        
+        .flash-messages .alert-danger {
+            border-left-color: #cf222e;
+            background: linear-gradient(135deg, rgba(207, 34, 46, 0.15) 0%, rgba(255, 255, 255, 0.95) 100%);
+        }
+        
+        .flash-messages .alert-info {
+            border-left-color: #0969da;
+            background: linear-gradient(135deg, rgba(9, 105, 218, 0.15) 0%, rgba(255, 255, 255, 0.95) 100%);
+        }
+        
+        .flash-messages .alert-warning {
+            border-left-color: #bf8700;
+            background: linear-gradient(135deg, rgba(191, 135, 0, 0.15) 0%, rgba(255, 255, 255, 0.95) 100%);
+        }
+        
+        .flash-messages .alert-content {
+            font-weight: 500;
+            font-size: 14px;
+            color: #24292f;
+        }
+        
+        .flash-messages .btn-close {
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        
+        .flash-messages .btn-close:hover {
+            opacity: 1;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .flash-messages {
+                top: 80px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-container">
+                    <div class="brand-icon">
+                        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" style="width:40px; height:40px;">
+                    </div>
+                    <div class="brand-text">
+                        <h4>Analytics</h4>
+                        <small>Platform</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="user-profile">
+                <div class="profile-avatar">
+                    <div class="avatar-inner">
+                        <i class="bi bi-person-gear"></i>
+                    </div>
+                    <div class="avatar-status"></div>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name">{{ current_user or 'User' }}</div>
+                    <div class="profile-role">Administrator</div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="logout-btn" title="Logout">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+            </div>
+
+            <ul class="nav flex-column sidebar-nav">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if 'ahrefs' in request.endpoint %}active parent-active{% endif %}" 
+                    href="#" 
+                    id="ahrefsDropdown" 
+                    role="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#ahrefsMenu" 
+                    aria-expanded="{% if 'ahrefs' in request.endpoint %}true{% else %}false{% endif %}">
+                        <i class="bi bi-link-45deg"></i>
+                        <span>Ahrefs</span>
+                        <i class="bi bi-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <ul class="collapse nav flex-column submenu {% if 'ahrefs' in request.endpoint %}show{% endif %}" id="ahrefsMenu">
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'ahrefs_urls' %}active{% endif %}" href="{{ url_for('ahrefs_urls') }}">
+                                <i class="bi bi-list-ul"></i> 
+                                <span>URLs</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'ahrefs_execute' %}active{% endif %}" href="{{ url_for('ahrefs_execute') }}">
+                                <i class="bi bi-play-circle"></i> 
+                                <span>Execute</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'ahrefs_data' %}active{% endif %}" href="{{ url_for('ahrefs_data') }}">
+                                <i class="bi bi-database"></i> 
+                                <span>Data</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'ahrefs_archived' %}active{% endif %}" href="{{ url_for('ahrefs_archived') }}">
+                                <i class="bi bi-archive"></i> 
+                                <span>Archived</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if 'scraper' in request.endpoint %}active parent-active{% endif %}" 
+                       href="#" 
+                       id="scraperDropdown" 
+                       role="button" 
+                       data-bs-toggle="collapse" 
+                       data-bs-target="#scraperMenu" 
+                       aria-expanded="{% if 'scraper' in request.endpoint %}true{% else %}false{% endif %}">
+                        <i class="bi bi-robot"></i>
+                        <span>Scraper</span>
+                        <i class="bi bi-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <ul class="collapse nav flex-column submenu {% if 'scraper' in request.endpoint %}show{% endif %}" id="scraperMenu">
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'scraper_execute' %}active{% endif %}" href="{{ url_for('scraper_execute') }}">
+                                <i class="bi bi-play-circle"></i> 
+                                <span>Execute</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'scraper_data' %}active{% endif %}" href="{{ url_for('scraper_data') }}">
+                                <i class="bi bi-collection"></i> 
+                                <span>Data</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if 'outreach' in request.endpoint %}active parent-active{% endif %}" 
+                       href="#" 
+                       id="outreachDropdown" 
+                       role="button" 
+                       data-bs-toggle="collapse" 
+                       data-bs-target="#outreachMenu" 
+                       aria-expanded="{% if 'outreach' in request.endpoint %}true{% else %}false{% endif %}">
+                        <i class="bi bi-send"></i>
+                        <span>Outreach</span>
+                        <i class="bi bi-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <ul class="collapse nav flex-column submenu {% if 'outreach' in request.endpoint %}show{% endif %}" id="outreachMenu">
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'outreach_config' %}active{% endif %}" href="{{ url_for('outreach_config') }}">
+                                <i class="bi bi-gear"></i> 
+                                <span>Config</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'outreach_urls' %}active{% endif %}" href="{{ url_for('outreach_urls') }}">
+                                <i class="bi bi-list"></i> 
+                                <span>URLs</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'outreach_execute' %}active{% endif %}" href="{{ url_for('outreach_execute') }}">
+                                <i class="bi bi-play-circle"></i> 
+                                <span>Execute</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'outreach_stats' %}active{% endif %}" href="{{ url_for('outreach_stats') }}">
+                                <i class="bi bi-bar-chart"></i> 
+                                <span>Stats</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if 'email' in request.endpoint %}active parent-active{% endif %}" 
+                    href="#" 
+                    id="emailDropdown" 
+                    role="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#emailMenu" 
+                    aria-expanded="{% if 'email' in request.endpoint %}true{% else %}false{% endif %}">
+                        <i class="bi bi-envelope-at"></i>
+                        <span>Email Outreach</span>
+                        <i class="bi bi-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <ul class="collapse nav flex-column submenu {% if 'email' in request.endpoint %}show{% endif %}" id="emailMenu">
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'email_extraction' %}active{% endif %}" href="{{ url_for('email_extraction') }}">
+                                <i class="bi bi-search"></i> 
+                                <span>Extract Emails</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'extracted_emails' %}active{% endif %}" href="{{ url_for('extracted_emails') }}">
+                                <i class="bi bi-collection"></i> 
+                                <span>Extracted Emails</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'email_outreach' %}active{% endif %}" href="{{ url_for('email_outreach') }}">
+                                <i class="bi bi-send"></i> 
+                                <span>Outreach</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link submenu-link {% if request.endpoint == 'email_outreach_stats_page' %}active{% endif %}" href="{{ url_for('email_outreach_stats_page') }}">
+                                <i class="bi bi-bar-chart"></i> 
+                                <span>View All & Stats</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'suppression' %}active{% endif %}" href="{{ url_for('suppression') }}">
+                        <i class="bi bi-shield-x"></i>
+                        <span>Suppression</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'dupe_checker' %}active{% endif %}" href="{{ url_for('dupe_checker') }}">
+                        <i class="bi bi-layers"></i>
+                        <span>Dupe Checker</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint == 'system_stats_page' %}active{% endif %}" href="{{ url_for('system_stats_page') }}">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>System Stats</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="main-content">
+            <header class="topbar">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-link sidebar-toggle d-lg-none" id="sidebarToggle">
+                            <i class="bi bi-list"></i>
+                        </button>
+                        <div class="page-header">
+                            <h5 class="mb-0 page-title">{% block page_title %}Dashboard{% endblock %}</h5>
+                            <div class="breadcrumb-container">
+                                <nav aria-label="breadcrumb">
+                                    <ol class="breadcrumb">
+                                        <li class="breadcrumb-item"><i class="bi bi-house-door me-1"></i>Home</li>
+                                        <li class="breadcrumb-item active">Dashboard</li>
+                                    </ol>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center topbar-actions">
+                        <div class="me-3 welcome-text">
+                            <small class="text-muted">Welcome back!</small>
+                        </div>
+                        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm logout-button">
+                            <i class="bi bi-box-arrow-right me-1"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <main class="content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="flash-messages">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show modern-alert" role="alert">
+                                    <div class="alert-content">
+                                        <i class="bi bi-{% if category == 'error' %}exclamation-triangle{% elif category == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+                                        {{ message }}
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('sidebarToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('sidebarToggle');
+            
+            if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                sidebar.classList.remove('show');
+            }
+        });
+
+        document.querySelectorAll('.dropdown-toggle').forEach(function(dropdown) {
+            dropdown.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('data-bs-target'));
+                const arrow = this.querySelector('.dropdown-arrow');
+                
+                if (target.classList.contains('show')) {
+                    target.classList.remove('show');
+                    this.setAttribute('aria-expanded', 'false');
+                    arrow.style.transform = 'rotate(0deg)';
+                } else {
+                    document.querySelectorAll('.dropdown-menu.show').forEach(function(openMenu) {
+                        openMenu.classList.remove('show');
+                        const parentDropdown = document.querySelector('[data-bs-target="#' + openMenu.id + '"]');
+                        if (parentDropdown) {
+                            parentDropdown.setAttribute('aria-expanded', 'false');
+                            const parentArrow = parentDropdown.querySelector('.dropdown-arrow');
+                            if (parentArrow) parentArrow.style.transform = 'rotate(0deg)';
+                        }
+                    });
+                    target.classList.add('show');
+                    this.setAttribute('aria-expanded', 'true');
+                    arrow.style.transform = 'rotate(180deg)';
+                }
+            });
+        });
+
+        document.querySelectorAll('.dropdown-toggle').forEach(function(dropdown) {
+            const target = document.querySelector(dropdown.getAttribute('data-bs-target'));
+            const arrow = dropdown.querySelector('.dropdown-arrow');
+            
+            if (target && target.classList.contains('show')) {
+                dropdown.setAttribute('aria-expanded', 'true');
+                arrow.style.transform = 'rotate(180deg)';
+            }
+        });
+
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.flash-messages .alert');
+            alerts.forEach(function(alert, index) {
+                setTimeout(function() {
+                    if (alert && !alert.classList.contains('fade')) {
+                        alert.style.animation = 'slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                    }
+                }, index * 150);
+                
+                setTimeout(function() {
+                    if (alert && alert.parentNode) {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                }, 15000 + (index * 150));
+            });
+        }, 100);
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

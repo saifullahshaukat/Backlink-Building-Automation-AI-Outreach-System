@@ -1,0 +1,430 @@
+{% extends 'base.html' %}
+
+{% block title %}Email Extraction{% endblock %}
+{% block page_title %}Email Extraction{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-gear-wide-connected text-primary me-2"></i>
+                    <h5 class="mb-0">Import URLs</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Source Type</label>
+                    <select class="form-select" id="sourceType">
+                        <option value="manual">Manual Input</option>
+                        <option value="scraped">Scraped Data</option>
+                        <option value="ahrefs_data">Ahrefs Data</option>
+                        <option value="csv">CSV Upload</option>
+                    </select>
+                </div>
+                
+                <div id="manualInput" class="source-option">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Enter URLs</label>
+                        <textarea class="form-control" id="manualUrls" rows="6" placeholder="example.com&#10;another-site.com"></textarea>
+                    </div>
+                </div>
+                
+                <div id="scrapedInput" class="source-option" style="display:none;">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Source Filter</label>
+                        <select class="form-select" id="sourceFilter">
+                            <option value="all">All Sources</option>
+                            <option value="adsy">Adsy Only</option>
+                            <option value="icopify">Icopify Only</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Search Term</label>
+                        <input type="text" class="form-control" id="searchTerm" placeholder="Search URLs...">
+                    </div>
+                </div>
+                
+                <div id="csvInput" class="source-option" style="display:none;">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">CSV Data</label>
+                        <textarea class="form-control font-monospace" id="csvData" rows="6" placeholder="URL&#10;https://example.com&#10;https://example2.com"></textarea>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Extraction Method</label>
+                    <select class="form-select" id="extractionMethod">
+                        <option value="selenium">Selenium (Web Scraping)</option>
+                        <option value="hunter">Hunter.io API</option>
+                    </select>
+                    <small class="text-muted">Hunter.io uses API credits, Selenium is free but slower</small>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary" onclick="importUrls()">
+                        <i class="bi bi-upload me-2"></i>Import URLs
+                    </button>
+                    <button class="btn btn-success btn-lg" id="startBtn" onclick="startExtraction()" disabled>
+                        <i class="bi bi-play-circle me-2"></i>Start Extraction
+                    </button>
+                    <button class="btn btn-danger" onclick="stopExtraction()" id="stopBtn" style="display:none;">
+                        <i class="bi bi-stop-circle me-2"></i>Stop Extraction
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card modern-card mt-3">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-graph-up text-info me-2"></i>
+                    <h6 class="mb-0">Summary</h6>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row text-center g-2">
+                    <div class="col-6">
+                        <div class="stat-card bg-success bg-opacity-10 rounded p-2">
+                            <div class="fw-bold text-success" id="totalEmails">{{ stats.total_emails if stats else 0 }}</div>
+                            <small class="text-muted">Total Emails</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-card bg-info bg-opacity-10 rounded p-2">
+                            <div class="fw-bold text-info" id="successRate">{{ stats.success_rate if stats else 0 }}%</div>
+                            <small class="text-muted">Success Rate</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 text-center">
+                    <small class="text-muted">Last run: <span id="lastRun">{{ stats.last_run if stats else 'Never' }}</span></small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card modern-card mt-3">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-activity text-success me-2"></i>
+                    <h6 class="mb-0">Status</h6>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="spinner-border text-primary" role="status" style="display:none;" id="statusSpinner"></div>
+                    <div class="fw-medium" id="statusText">Idle</div>
+                    <div class="mt-2">
+                        <small class="text-muted" id="currentUrl"></small>
+                    </div>
+                    <div class="mt-2" id="creditsUsed" style="display:none;">
+                        <small class="badge bg-warning">Credits: <span id="creditsCount">0</span></small>
+                    </div>
+                </div>
+                
+                <div class="row text-center g-2">
+                    <div class="col-4">
+                        <div class="stat-card bg-info bg-opacity-10 rounded p-2">
+                            <div class="fw-bold text-info" id="processedCount">0</div>
+                            <small class="text-muted">Processed</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-card bg-success bg-opacity-10 rounded p-2">
+                            <div class="fw-bold text-success" id="emailsFound">0</div>
+                            <small class="text-muted">Emails Found</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-card bg-danger bg-opacity-10 rounded p-2">
+                            <div class="fw-bold text-danger" id="errors">0</div>
+                            <small class="text-muted">Errors</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-list-ul text-primary me-2"></i>
+                        <h5 class="mb-0">Imported URLs</h5>
+                    </div>
+                    <span class="badge bg-primary" id="urlCount">0 URLs</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="url-list-container border rounded p-3" style="max-height: 500px; overflow-y: auto;" id="urlListContainer">
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-inbox display-4"></i>
+                        <p class="mt-3">Import URLs to start extraction</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let importedUrls = [];
+let currentMethod = 'selenium';
+
+document.getElementById('sourceType').addEventListener('change', function() {
+    document.querySelectorAll('.source-option').forEach(el => el.style.display = 'none');
+    const sourceMap = {
+        'manual': 'manualInput',
+        'scraped': 'scrapedInput',
+        'ahrefs_data': 'scrapedInput',
+        'csv': 'csvInput'
+    };
+    document.getElementById(sourceMap[this.value]).style.display = 'block';
+});
+
+document.getElementById('extractionMethod').addEventListener('change', function() {
+    currentMethod = this.value;
+    if (this.value === 'hunter') {
+        document.getElementById('creditsUsed').style.display = 'block';
+    } else {
+        document.getElementById('creditsUsed').style.display = 'none';
+    }
+});
+
+function importUrls() {
+    const sourceType = document.getElementById('sourceType').value;
+    const data = {
+        source_type: sourceType,
+        manual_urls: document.getElementById('manualUrls').value,
+        csv_data: document.getElementById('csvData').value,
+        source_filter: document.getElementById('sourceFilter').value,
+        search_term: document.getElementById('searchTerm').value
+    };
+    
+    fetch('/email-extraction/import-urls', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            importedUrls = data.urls;
+            displayUrls(data.urls);
+            document.getElementById('startBtn').disabled = false;
+            showToast(`Imported ${data.count} URLs`, 'success');
+        } else {
+            showToast('Import failed: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Import failed: ' + error.message, 'error');
+    });
+}
+
+function displayUrls(urls) {
+    const container = document.getElementById('urlListContainer');
+    document.getElementById('urlCount').textContent = `${urls.length} URLs`;
+    
+    if (urls.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-inbox display-4"></i>
+                <p class="mt-3">No URLs imported</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '<div class="list-group">';
+    urls.forEach((url, index) => {
+        html += `
+            <div class="list-group-item d-flex align-items-center">
+                <div class="url-icon bg-primary bg-opacity-10 rounded-circle me-3" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;">
+                    <i class="bi bi-link-45deg text-primary"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="fw-medium text-truncate">${url}</div>
+                </div>
+                <button class="btn btn-sm btn-outline-danger" onclick="removeUrl(${index})">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+        `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function removeUrl(index) {
+    importedUrls.splice(index, 1);
+    displayUrls(importedUrls);
+    if (importedUrls.length === 0) {
+        document.getElementById('startBtn').disabled = true;
+    }
+}
+
+function startExtraction() {
+    if (importedUrls.length === 0) {
+        showToast('No URLs to process', 'warning');
+        return;
+    }
+    
+    const method = document.getElementById('extractionMethod').value;
+    const endpoint = method === 'hunter' ? '/email-extraction/start-hunter' : '/email-extraction/start';
+    
+    fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ urls: importedUrls })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('stopBtn').style.display = 'block';
+            document.getElementById('startBtn').style.display = 'none';
+            startStatusUpdates(method);
+            showToast('Extraction started', 'success');
+        } else {
+            showToast('Failed to start: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('Network error: ' + error.message, 'error');
+    });
+}
+
+function stopExtraction() {
+    const method = currentMethod;
+    const endpoint = method === 'hunter' ? '/email-extraction/stop-hunter' : '/email-extraction/stop';
+    
+    fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('stopBtn').style.display = 'none';
+        document.getElementById('startBtn').style.display = 'block';
+        clearInterval(window.statusInterval);
+        showToast('Extraction stopped', 'info');
+    })
+    .catch(error => {
+        showToast('Failed to stop', 'error');
+    });
+}
+
+function startStatusUpdates(method) {
+    window.statusInterval = setInterval(() => updateStatus(method), 2000);
+    updateStatus(method);
+}
+
+function updateStatus(method) {
+    const endpoint = method === 'hunter' ? '/email-extraction/stats-hunter' : '/email-extraction/stats';
+    
+    fetch(endpoint)
+    .then(response => response.json())
+    .then(stats => {
+        document.getElementById('statusText').textContent = stats.status;
+        document.getElementById('currentUrl').textContent = stats.current_url || '';
+        document.getElementById('processedCount').textContent = stats.urls_processed || 0;
+        document.getElementById('emailsFound').textContent = stats.emails_found || 0;
+        document.getElementById('errors').textContent = stats.errors || 0;
+        
+        if (method === 'hunter' && stats.credits_used) {
+            document.getElementById('creditsCount').textContent = stats.credits_used;
+        }
+        
+        const spinner = document.getElementById('statusSpinner');
+        if (stats.status === 'Running' || stats.status === 'Starting...') {
+            spinner.style.display = 'inline-block';
+        } else {
+            spinner.style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'none';
+            document.getElementById('startBtn').style.display = 'block';
+            if (window.statusInterval) {
+                clearInterval(window.statusInterval);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Status update failed:', error);
+    });
+}
+
+function showToast(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : type === 'warning' ? 'alert-warning' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 5000);
+}
+</script>
+
+<style>
+.modern-card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    transition: all 0.2s ease;
+}
+
+.stat-card {
+    transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-1px);
+}
+
+.url-list-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.url-list-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.url-list-container::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.list-group-item {
+    transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    transform: translateX(5px);
+}
+</style>
+{% endblock %}

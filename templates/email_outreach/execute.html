@@ -1,0 +1,895 @@
+{% extends 'base.html' %}
+
+{% block title %}Email Outreach{% endblock %}
+{% block page_title %}Email Outreach{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-blue h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3">
+                        <i class="bi bi-envelope text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ stats.total_emails }}</h3>
+                        <p class="text-white-50 mb-0">Total Emails</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-orange h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3">
+                        <i class="bi bi-clock text-warning"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ stats.pending_emails }}</h3>
+                        <p class="text-white-50 mb-0">Pending</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-green h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3">
+                        <i class="bi bi-check-circle text-success"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ stats.sent_emails }}</h3>
+                        <p class="text-white-50 mb-0">Sent</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-purple h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3">
+                        <i class="bi bi-x-circle text-danger"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ stats.failed_emails }}</h3>
+                        <p class="text-white-50 mb-0">Failed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="card modern-card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-upload me-2"></i>Step 1: Import Emails</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Import Source</label>
+                    <select class="form-select form-select-lg" id="importSource">
+                        <option value="extracted">From Extracted Emails</option>
+                        <option value="file">Upload CSV/Excel File</option>
+                    </select>
+                </div>
+
+                <div id="extractedOptions" class="mb-3">
+                    <label class="form-label fw-medium">Selection Mode</label>
+                    <div class="d-grid gap-2">
+                        <input type="radio" class="btn-check" name="emailMode" id="onePerUrl" value="one" checked>
+                        <label class="btn btn-outline-primary" for="onePerUrl">
+                            <i class="bi bi-envelope me-2"></i>Best Email Per URL
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="emailMode" id="allEmails" value="all">
+                        <label class="btn btn-outline-primary" for="allEmails">
+                            <i class="bi bi-envelope-open me-2"></i>All Emails Per URL
+                        </label>
+                    </div>
+                </div>
+
+                <div id="fileUploadOptions" class="mb-3" style="display:none;">
+                    <div class="alert alert-info mb-3">
+                        <small><strong>📋 File Format:</strong><br>
+                        Required: <code>Email</code> column<br>
+                        Optional: <code>URL</code>, <code>Website</code>, or <code>Domain</code> column</small>
+                    </div>
+                    <label class="form-label fw-medium">Select CSV or Excel File</label>
+                    <input type="file" class="form-control form-control-lg" id="emailFile" accept=".csv,.xlsx,.xls">
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="downloadSampleCSV()">
+                            <i class="bi bi-download me-1"></i>Download Sample CSV
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary w-100 btn-lg" id="importEmailsBtn">
+                    <i class="bi bi-upload me-2"></i>Import Emails
+                </button>
+                
+                <div id="importedEmailsPreview" class="mt-3" style="display:none;">
+                    <div class="alert alert-info">
+                        <strong>Imported Emails Preview</strong>
+                        <div id="emailsPreviewList" class="mt-2" style="max-height: 150px; overflow-y: auto; font-size: 0.85rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card modern-card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Step 2: Email Template</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <button class="btn btn-outline-secondary btn-sm w-100" id="loadTemplateBtn">
+                        <i class="bi bi-folder-open me-1"></i>Load Saved Template
+                    </button>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Subject</label>
+                    <input type="text" class="form-control form-control-sm" id="emailSubject" placeholder="Email subject">
+                    <small class="text-muted">Use: (company), (domain)</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Message</label>
+                    <textarea class="form-control form-control-sm" id="emailMessage" rows="6" placeholder="Hello (company)..."></textarea>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-success btn-sm" id="saveAsTemplateBtn">
+                        <i class="bi bi-save me-1"></i>Save Template
+                    </button>
+                    <button class="btn btn-success" id="applyTemplateBtn">
+                        <i class="bi bi-check-circle me-2"></i>Apply to All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card modern-card h-100">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-send me-2"></i>Step 3: Send Emails</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Email Credentials</label>
+                    <div id="credentialsList"></div>
+                    <button class="btn btn-outline-primary btn-sm w-100 mt-2" data-bs-toggle="modal" data-bs-target="#credentialsModal">
+                        <i class="bi bi-plus-circle me-1"></i>Add Credentials
+                    </button>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Delay Between Emails (seconds)</label>
+                    <input type="number" class="form-control" id="sendDelay" value="5" min="1" max="60">
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success btn-lg" id="startSendingBtn">
+                        <i class="bi bi-play-circle me-2"></i>Start Sending
+                    </button>
+                    <button class="btn btn-danger btn-lg" id="stopSendingBtn" style="display:none;">
+                        <i class="bi bi-stop-circle me-2"></i>Stop Sending
+                    </button>
+                </div>
+                
+                <div id="sendingStatus" class="mt-3" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-list me-2"></i>Imported Emails for Outreach</h5>
+                    <a href="{{ url_for('email_outreach_stats_page') }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-bar-chart me-1"></i>View All & Stats
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover table-sm mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th width="5%">
+                                    <input type="checkbox" id="selectAllEmails" title="Select All">
+                                </th>
+                                <th width="30%">Email</th>
+                                <th width="25%">URL</th>
+                                <th width="25%">Subject</th>
+                                <th width="10%">Status</th>
+                                <th width="5%">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="emailsTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                                    No emails imported yet. Click "Import Emails" to start.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-sm btn-danger" id="deleteSelectedBtn" style="display:none;">
+                        <i class="bi bi-trash me-1"></i>Delete Selected
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="credentialsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Email Credentials</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="credEmail" placeholder="your@email.com">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Password / App Password</label>
+                    <input type="password" class="form-control" id="credPassword">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">SMTP Server</label>
+                    <input type="text" class="form-control" id="credSmtp" placeholder="smtp.gmail.com">
+                    <small class="text-muted">Gmail: smtp.gmail.com | Outlook: smtp-mail.outlook.com</small>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">SMTP Port</label>
+                    <input type="number" class="form-control" id="credPort" value="587">
+                    <small class="text-muted">Usually 587 for TLS</small>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="credDefault">
+                        <label class="form-check-label" for="credDefault">Set as default credentials</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveCredentialsBtn">Save Credentials</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="saveTemplateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Save Email Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Template Name</label>
+                    <input type="text" class="form-control" id="templateName" placeholder="e.g., Guest Post Outreach">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSaveTemplateBtn">Save Template</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="loadTemplateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Load Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="templatesList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let sendingInterval;
+let saveTemplateModal, credentialsModal, loadTemplateModal;
+
+document.addEventListener('DOMContentLoaded', function() {
+    saveTemplateModal = new bootstrap.Modal(document.getElementById('saveTemplateModal'));
+    credentialsModal = new bootstrap.Modal(document.getElementById('credentialsModal'));
+    loadTemplateModal = new bootstrap.Modal(document.getElementById('loadTemplateModal'));
+    
+    loadCredentials();
+    loadImportedEmails();
+    startStatusPolling();
+    
+    // Toggle import source options
+    document.getElementById('importSource').addEventListener('change', function() {
+        const extractedOptions = document.getElementById('extractedOptions');
+        const fileUploadOptions = document.getElementById('fileUploadOptions');
+        
+        if (this.value === 'file') {
+            extractedOptions.style.display = 'none';
+            fileUploadOptions.style.display = 'block';
+        } else {
+            extractedOptions.style.display = 'block';
+            fileUploadOptions.style.display = 'none';
+        }
+    });
+    
+    // Select all checkbox handler
+    document.getElementById('selectAllEmails').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.email-checkbox');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+        updateDeleteButtonVisibility();
+    });
+    
+    // Update delete button when individual checkboxes change
+    document.addEventListener('change', function(e) {
+        if (e.target.classList.contains('email-checkbox')) {
+            updateDeleteButtonVisibility();
+        }
+    });
+});
+
+function loadCredentials() {
+    fetch('/email-outreach/credentials')
+        .then(r => r.json())
+        .then(data => {
+            const list = document.getElementById('credentialsList');
+            list.innerHTML = '';
+            
+            if (data.credentials.length === 0) {
+                list.innerHTML = '<div class="alert alert-warning alert-sm mb-0"><small>No credentials added</small></div>';
+                return;
+            }
+            
+            data.credentials.forEach(cred => {
+                const div = document.createElement('div');
+                div.className = 'credential-item p-2 mb-2 border rounded bg-light';
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div style="font-size: 0.85rem;">
+                            <strong>${cred.email}</strong>
+                            ${cred.is_default ? '<span class="badge bg-success ms-1">Default</span>' : ''}
+                            <br><small class="text-muted">${cred.smtp_server}</small>
+                        </div>
+                        <div>
+                            ${!cred.is_default ? `<button class="btn btn-sm btn-outline-primary" onclick="setDefaultCredentials(${cred.id})" title="Set as default"><i class="bi bi-star"></i></button>` : ''}
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCredentials(${cred.id})" title="Delete"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        });
+}
+
+function loadImportedEmails() {
+    fetch('/email-outreach/get-emails?limit=100')
+        .then(r => r.json())
+        .then(data => {
+            const tbody = document.getElementById('emailsTableBody');
+            
+            if (!data.success || data.emails.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="bi bi-inbox display-6 d-block mb-2"></i>No emails imported yet. Click "Import Emails" to start.</td></tr>';
+                document.getElementById('deleteSelectedBtn').style.display = 'none';
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            data.emails.forEach(email => {
+                const row = document.createElement('tr');
+                
+                const statusBadge = email.status === 'pending' ? 
+                    '<span class="badge bg-warning">Pending</span>' :
+                    email.status === 'sent' ?
+                    '<span class="badge bg-success">Sent</span>' :
+                    '<span class="badge bg-danger">Failed</span>';
+                
+                row.innerHTML = `
+                    <td><input type="checkbox" class="email-checkbox" value="${email.id}"></td>
+                    <td><small>${email.email}</small></td>
+                    <td><small>${email.url || '-'}</small></td>
+                    <td><small>${email.subject ? (email.subject.substring(0, 30) + (email.subject.length > 30 ? '...' : '')) : '-'}</small></td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSingleEmail(${email.id})" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            updateDeleteButtonVisibility();
+        })
+        .catch(err => {
+            console.error('Error loading emails:', err);
+            const tbody = document.getElementById('emailsTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4"><i class="bi bi-exclamation-triangle display-6 d-block mb-2"></i>Error loading emails</td></tr>';
+        });
+}
+
+function updateDeleteButtonVisibility() {
+    const checkboxes = document.querySelectorAll('.email-checkbox:checked');
+    const deleteBtn = document.getElementById('deleteSelectedBtn');
+    deleteBtn.style.display = checkboxes.length > 0 ? 'inline-block' : 'none';
+}
+
+function deleteSingleEmail(emailId) {
+    if (!confirm('Delete this email?')) return;
+    
+    fetch('/email-outreach/delete-emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [emailId] })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Email deleted', 'success');
+            loadImportedEmails();
+        }
+    });
+}
+
+document.getElementById('deleteSelectedBtn').addEventListener('click', function() {
+    const checkboxes = document.querySelectorAll('.email-checkbox:checked');
+    const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    
+    if (ids.length === 0) {
+        showNotification('No emails selected', 'error');
+        return;
+    }
+    
+    if (!confirm(`Delete ${ids.length} selected email(s)?`)) return;
+    
+    fetch('/email-outreach/delete-emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: ids })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(`${data.deleted} email(s) deleted`, 'success');
+            loadImportedEmails();
+        }
+    });
+});
+
+function loadTemplates() {
+    fetch('/email-outreach/templates')
+        .then(r => r.json())
+        .then(data => {
+            const list = document.getElementById('templatesList');
+            list.innerHTML = '';
+            
+            if (data.templates.length === 0) {
+                list.innerHTML = '<p class="text-muted text-center py-3">No templates saved yet</p>';
+                return;
+            }
+            
+            data.templates.forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'template-item p-3 mb-2 border rounded';
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${t.name}</strong>
+                            <br><small class="text-muted">${t.subject.substring(0, 50)}${t.subject.length > 50 ? '...' : ''}</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-primary me-1" onclick="useTemplate(${t.id}, '${t.subject.replace(/'/g, "\\'")}', \`${t.message.replace(/`/g, '\\`')}\`)">
+                                <i class="bi bi-check"></i> Use
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteTemplate(${t.id})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        });
+}
+
+function useTemplate(id, subject, message) {
+    document.getElementById('emailSubject').value = subject;
+    document.getElementById('emailMessage').value = message;
+    loadTemplateModal.hide();
+    showNotification('Template loaded successfully', 'success');
+}
+
+function deleteTemplate(id) {
+    if (!confirm('Delete this template?')) return;
+    
+    fetch(`/email-outreach/delete-template/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Template deleted', 'success');
+            loadTemplates();
+        }
+    });
+}
+
+document.getElementById('loadTemplateBtn').addEventListener('click', function() {
+    loadTemplates();
+    loadTemplateModal.show();
+});
+
+document.getElementById('saveAsTemplateBtn').addEventListener('click', function() {
+    const subject = document.getElementById('emailSubject').value;
+    const message = document.getElementById('emailMessage').value;
+    
+    if (!subject || !message) {
+        showNotification('Please enter subject and message first', 'error');
+        return;
+    }
+    
+    saveTemplateModal.show();
+});
+
+document.getElementById('confirmSaveTemplateBtn').addEventListener('click', function() {
+    const name = document.getElementById('templateName').value;
+    const subject = document.getElementById('emailSubject').value;
+    const message = document.getElementById('emailMessage').value;
+    
+    if (!name) {
+        showNotification('Please enter template name', 'error');
+        return;
+    }
+    
+    fetch('/email-outreach/save-template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ template_name: name, subject, message })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Template saved successfully', 'success');
+            saveTemplateModal.hide();
+            document.getElementById('templateName').value = '';
+        }
+    });
+});
+
+document.getElementById('saveCredentialsBtn').addEventListener('click', function() {
+    const email = document.getElementById('credEmail').value;
+    const password = document.getElementById('credPassword').value;
+    const smtp_server = document.getElementById('credSmtp').value;
+    const smtp_port = document.getElementById('credPort').value;
+    const is_default = document.getElementById('credDefault').checked;
+    
+    if (!email || !password || !smtp_server || !smtp_port) {
+        showNotification('Please fill all fields', 'error');
+        return;
+    }
+    
+    fetch('/email-outreach/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            action: 'add', 
+            email, 
+            password, 
+            smtp_server, 
+            smtp_port, 
+            is_default 
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Credentials saved successfully', 'success');
+            credentialsModal.hide();
+            loadCredentials();
+            document.getElementById('credEmail').value = '';
+            document.getElementById('credPassword').value = '';
+            document.getElementById('credSmtp').value = '';
+            document.getElementById('credPort').value = '587';
+            document.getElementById('credDefault').checked = false;
+        }
+    });
+});
+
+function deleteCredentials(id) {
+    if (!confirm('Delete these credentials?')) return;
+    
+    fetch('/email-outreach/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Credentials deleted', 'success');
+            loadCredentials();
+        }
+    });
+}
+
+function setDefaultCredentials(id) {
+    fetch('/email-outreach/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_default', id })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Default credentials updated', 'success');
+            loadCredentials();
+        }
+    });
+}
+
+document.getElementById('importEmailsBtn').addEventListener('click', function() {
+    const importSource = document.getElementById('importSource').value;
+    
+    this.disabled = true;
+    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Importing...';
+    
+    if (importSource === 'file') {
+        // Handle file upload
+        const fileInput = document.getElementById('emailFile');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            showNotification('Please select a file', 'error');
+            this.disabled = false;
+            this.innerHTML = '<i class="bi bi-upload me-2"></i>Import Emails';
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('email_file', file);
+        
+        fetch('/email-outreach/import-from-file', {
+            method: 'POST',
+            body: formData
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message || 'Import failed', 'error');
+            }
+        })
+        .catch(err => {
+            showNotification('Error uploading file: ' + err.message, 'error');
+        })
+        .finally(() => {
+            this.disabled = false;
+            this.innerHTML = '<i class="bi bi-upload me-2"></i>Import Emails';
+        });
+    } else {
+        // Handle extracted emails import
+        const oneEmailPerUrl = document.getElementById('onePerUrl').checked;
+        
+        fetch('/email-outreach/import-emails', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                source_type: 'extracted_emails',
+                one_email_per_url: oneEmailPerUrl
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message || 'Import failed', 'error');
+            }
+        })
+        .finally(() => {
+            this.disabled = false;
+            this.innerHTML = '<i class="bi bi-upload me-2"></i>Import Emails';
+        });
+    }
+});
+
+document.getElementById('applyTemplateBtn').addEventListener('click', function() {
+    const subject = document.getElementById('emailSubject').value;
+    const message = document.getElementById('emailMessage').value;
+    
+    if (!subject || !message) {
+        showNotification('Please enter subject and message', 'error');
+        return;
+    }
+    
+    this.disabled = true;
+    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Applying...';
+    
+    fetch('/email-outreach/update-template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject, message })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Update failed', 'error');
+        }
+    })
+    .finally(() => {
+        this.disabled = false;
+        this.innerHTML = '<i class="bi bi-check-circle me-2"></i>Apply to All';
+    });
+});
+
+document.getElementById('startSendingBtn').addEventListener('click', function() {
+    const delay = document.getElementById('sendDelay').value;
+    
+    fetch('/email-outreach/start-sending', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            email_ids: [],
+            delay_seconds: parseInt(delay)
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Email sending started', 'success');
+            document.getElementById('startSendingBtn').style.display = 'none';
+            document.getElementById('stopSendingBtn').style.display = 'block';
+        } else {
+            showNotification(data.message, 'error');
+        }
+    });
+});
+
+document.getElementById('stopSendingBtn').addEventListener('click', function() {
+    fetch('/email-outreach/stop-sending', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        showNotification('Email sending stopped', 'info');
+        document.getElementById('startSendingBtn').style.display = 'block';
+        document.getElementById('stopSendingBtn').style.display = 'none';
+    });
+});
+
+function startStatusPolling() {
+    sendingInterval = setInterval(() => {
+        fetch('/email-outreach/stats')
+            .then(r => r.json())
+            .then(data => {
+                const statusDiv = document.getElementById('sendingStatus');
+                
+                if (data.is_running) {
+                    statusDiv.style.display = 'block';
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-info mb-0">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm me-2"></div>
+                                <div style="font-size: 0.9rem;">
+                                    <strong>Sending...</strong><br>
+                                    <small>To: ${data.current_email || 'N/A'}</small><br>
+                                    <small>Progress: ${data.sent}/${data.total_emails} | Failed: ${data.failed}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('startSendingBtn').style.display = 'none';
+                    document.getElementById('stopSendingBtn').style.display = 'block';
+                } else {
+                    statusDiv.style.display = 'none';
+                    document.getElementById('startSendingBtn').style.display = 'block';
+                    document.getElementById('stopSendingBtn').style.display = 'none';
+                }
+            });
+    }, 2000);
+}
+
+function showNotification(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 5000);
+}
+
+function downloadSampleCSV() {
+    const csvContent = "Email,URL\njohn@example.com,example.com\njane@company.com,company.com\ncontact@test.com,test.com";
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sample_email_import.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    showNotification('Sample CSV downloaded', 'success');
+}
+</script>
+
+<style>
+.gradient-card-green { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; }
+.gradient-card-blue { background: linear-gradient(135deg, #007bff 0%, #6610f2 100%); border: none; }
+.gradient-card-purple { background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%); border: none; }
+.gradient-card-orange { background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%); border: none; }
+.stat-icon { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+.modern-card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease; }
+.modern-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+.credential-item { transition: all 0.2s ease; }
+.credential-item:hover { background: #e9ecef !important; }
+.template-item { background: #f8f9fa; transition: all 0.2s ease; cursor: pointer; }
+.template-item:hover { background: #e9ecef; }
+.sticky-top { position: sticky; top: 0; z-index: 10; }
+</style>
+{% endblock %}

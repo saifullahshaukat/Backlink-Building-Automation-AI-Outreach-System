@@ -1,0 +1,474 @@
+{% extends 'base.html' %}
+
+{% block title %}Outreach Stats{% endblock %}
+{% block page_title %}Email Outreach Statistics{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-blue h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+<div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3">
+                        <i class="bi bi-envelope text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold" id="totalEmails">0</h3>
+                        <p class="text-white-50 mb-0">Total Emails</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-green h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3">
+                        <i class="bi bi-check-circle text-success"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold" id="sentEmails">0</h3>
+                        <p class="text-white-50 mb-0">Sent Successfully</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-purple h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3">
+                        <i class="bi bi-x-circle text-danger"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold" id="failedEmails">0</h3>
+                        <p class="text-white-50 mb-0">Failed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-orange h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3">
+                        <i class="bi bi-percent text-warning"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold" id="successRate">0%</h3>
+                        <p class="text-white-50 mb-0">Success Rate</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-search me-2"></i>Search & Filter</h5>
+                    <a href="{{ url_for('export_email_outreach') }}" class="btn btn-success btn-sm">
+                        <i class="bi bi-download me-1"></i>Export All
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-medium">Search</label>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Search email or URL...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Status</label>
+                        <select id="statusFilter" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="sent">Sent</option>
+                            <option value="failed">Failed</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-medium">Date</label>
+                        <input type="date" id="dateFilter" class="form-control">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-medium">&nbsp;</label>
+                        <button class="btn btn-primary w-100" id="applyFilters">
+                            <i class="bi bi-filter me-1"></i>Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card modern-card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-activity me-2"></i>Quick Stats</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Today's Sent:</span>
+                    <strong id="todaySent">0</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">This Week:</span>
+                    <strong id="weekSent">0</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">This Month:</span>
+                    <strong id="monthSent">0</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Avg Per Day:</span>
+                    <strong id="avgPerDay">0</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-table me-2"></i>Email Outreach Details</h5>
+                    <div class="text-muted small">
+                        <span id="tableCount">Showing 0 records</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="border-0">Email</th>
+                                <th class="border-0">URL</th>
+                                <th class="border-0">Subject</th>
+                                <th class="border-0">Status</th>
+                                <th class="border-0">Sent At</th>
+                                <th class="border-0">Error</th>
+                                <th class="border-0">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statsTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="text-muted mt-2">Loading data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div id="paginationInfo" class="text-muted small">Page 1</div>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0" id="pagination">
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="viewEmailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Email Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-medium">Email:</label>
+                        <p id="modalEmail" class="text-break"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-medium">Status:</label>
+                        <p id="modalStatus"></p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-medium">URL:</label>
+                        <p id="modalUrl" class="text-break"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-medium">Sent At:</label>
+                        <p id="modalSentAt"></p>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-medium">Subject:</label>
+                    <p id="modalSubject" class="bg-light p-2 rounded"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-medium">Message:</label>
+                    <div id="modalMessage" class="bg-light p-3 rounded" style="white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></div>
+                </div>
+                <div id="modalErrorSection" style="display:none;">
+                    <label class="fw-medium text-danger">Error Message:</label>
+                    <div id="modalError" class="alert alert-danger"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentPage = 1;
+let currentFilters = {};
+let allData = [];
+let viewEmailModal;
+
+document.addEventListener('DOMContentLoaded', function() {
+    viewEmailModal = new bootstrap.Modal(document.getElementById('viewEmailModal'));
+    loadStats();
+    loadTableData();
+});
+
+function loadStats() {
+    fetch('/api/email-outreach-stats')
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('totalEmails').textContent = data.total || 0;
+            document.getElementById('sentEmails').textContent = data.sent || 0;
+            document.getElementById('failedEmails').textContent = data.failed || 0;
+            document.getElementById('successRate').textContent = data.success_rate || '0%';
+            
+            document.getElementById('todaySent').textContent = data.today_sent || 0;
+            document.getElementById('weekSent').textContent = data.week_sent || 0;
+            document.getElementById('monthSent').textContent = data.month_sent || 0;
+            document.getElementById('avgPerDay').textContent = data.avg_per_day || 0;
+        })
+        .catch(err => {
+            console.error('Failed to load stats:', err);
+        });
+}
+
+function loadTableData(page = 1) {
+    currentPage = page;
+    
+    const searchTerm = document.getElementById('searchInput').value;
+    const status = document.getElementById('statusFilter').value;
+    const date = document.getElementById('dateFilter').value;
+    
+    let url = `/api/email-outreach-data?page=${page}`;
+    if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+    if (status) url += `&status=${status}`;
+    if (date) url += `&date=${date}`;
+    
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            allData = data.records || [];
+            renderTable(data.records);
+            renderPagination(data.total, data.per_page, page);
+            document.getElementById('tableCount').textContent = `Showing ${data.records.length} of ${data.total} records`;
+        })
+        .catch(err => {
+            console.error('Failed to load table data:', err);
+            document.getElementById('statsTableBody').innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-danger py-4">
+                        <i class="bi bi-exclamation-triangle display-6 d-block mb-2"></i>
+                        Failed to load data
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+function renderTable(records) {
+    const tbody = document.getElementById('statsTableBody');
+    
+    if (!records || records.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">
+                    <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                    No records found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = records.map(record => {
+        const statusBadge = record.status === 'sent' 
+            ? '<span class="badge bg-success">Sent</span>' 
+            : record.status === 'failed' 
+            ? '<span class="badge bg-danger">Failed</span>' 
+            : '<span class="badge bg-warning">Pending</span>';
+        
+        const sentAt = record.sent_at ? new Date(record.sent_at).toLocaleString() : '-';
+        const error = record.error_message ? `<small class="text-danger">${record.error_message.substring(0, 30)}...</small>` : '-';
+        
+        return `
+            <tr class="table-row">
+                <td>
+                    <span class="fw-medium text-primary">${record.email}</span>
+                </td>
+                <td>
+                    <a href="${record.url}" target="_blank" class="text-decoration-none text-muted small">
+                        ${record.url.substring(0, 40)}${record.url.length > 40 ? '...' : ''}
+                    </a>
+                </td>
+                <td>
+                    <span class="small">${record.subject ? record.subject.substring(0, 30) : 'No subject'}${record.subject && record.subject.length > 30 ? '...' : ''}</span>
+                </td>
+                <td>${statusBadge}</td>
+                <td><small>${sentAt}</small></td>
+                <td>${error}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewEmail(${record.id})" title="View Details">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderPagination(total, perPage, currentPage) {
+    const totalPages = Math.ceil(total / perPage);
+    const paginationEl = document.getElementById('pagination');
+    
+    if (totalPages <= 1) {
+        paginationEl.innerHTML = '';
+        return;
+    }
+    
+    let html = '';
+    
+    if (currentPage > 1) {
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadTableData(${currentPage - 1}); return false;"><i class="bi bi-chevron-left"></i></a></li>`;
+    }
+    
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#" onclick="loadTableData(${i}); return false;">${i}</a></li>`;
+        } else if (i === currentPage - 3 || i === currentPage + 3) {
+            html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+    }
+    
+    if (currentPage < totalPages) {
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadTableData(${currentPage + 1}); return false;"><i class="bi bi-chevron-right"></i></a></li>`;
+    }
+    
+    paginationEl.innerHTML = html;
+    document.getElementById('paginationInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+}
+
+function viewEmail(id) {
+    const record = allData.find(r => r.id === id);
+    
+    if (!record) {
+        showNotification('Record not found', 'error');
+        return;
+    }
+    
+    document.getElementById('modalEmail').textContent = record.email;
+    document.getElementById('modalUrl').textContent = record.url;
+    document.getElementById('modalSubject').textContent = record.subject || 'No subject';
+    document.getElementById('modalMessage').textContent = record.message || 'No message';
+    document.getElementById('modalSentAt').textContent = record.sent_at ? new Date(record.sent_at).toLocaleString() : 'Not sent yet';
+    
+    const statusBadge = record.status === 'sent' 
+        ? '<span class="badge bg-success">Sent</span>' 
+        : record.status === 'failed' 
+        ? '<span class="badge bg-danger">Failed</span>' 
+        : '<span class="badge bg-warning">Pending</span>';
+    document.getElementById('modalStatus').innerHTML = statusBadge;
+    
+    if (record.error_message) {
+        document.getElementById('modalErrorSection').style.display = 'block';
+        document.getElementById('modalError').textContent = record.error_message;
+    } else {
+        document.getElementById('modalErrorSection').style.display = 'none';
+    }
+    
+    viewEmailModal.show();
+}
+
+document.getElementById('applyFilters').addEventListener('click', function() {
+    loadTableData(1);
+});
+
+document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        loadTableData(1);
+    }
+});
+
+function showNotification(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 5000);
+}
+
+setInterval(loadStats, 10000);
+</script>
+
+<style>
+.gradient-card-green { background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border: none; }
+.gradient-card-blue { background: linear-gradient(135deg, #007bff 0%, #6610f2 100%); border: none; }
+.gradient-card-purple { background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%); border: none; }
+.gradient-card-orange { background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%); border: none; }
+.stat-icon { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+.modern-card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease; }
+.modern-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+.table-row { transition: all 0.2s ease; border-left: 3px solid transparent; }
+.table-row:hover { background-color: rgba(13, 110, 253, 0.05); border-left-color: var(--bs-primary); }
+</style>
+{% endblock %}

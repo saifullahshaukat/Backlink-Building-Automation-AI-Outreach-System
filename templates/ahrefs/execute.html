@@ -1,0 +1,1215 @@
+{% extends "base.html" %}
+
+{% block title %}Ahrefs Execute Operations{% endblock %}
+{% block page_title %}Ahrefs Execute Operations{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="card modern-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-gear-wide-connected text-primary me-2"></i>
+                    <h5 class="mb-0">Operations Configuration</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <label class="form-label fw-medium">Select Operations</label>
+                    <div class="operation-list">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="metrics" name="operations" value="metrics">
+                            <label class="form-check-label d-flex align-items-center" for="metrics">
+                                <div class="stat-icon bg-success bg-opacity-10 me-3 flex-shrink-0">
+                                    <i class="bi bi-graph-up text-success"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">Current Metrics</div>
+                                    <small class="text-muted">Get current traffic and keyword data</small>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="domain_rating" name="operations" value="domain_rating">
+                            <label class="form-check-label d-flex align-items-center" for="domain_rating">
+                                <div class="stat-icon bg-warning bg-opacity-10 me-3 flex-shrink-0">
+                                    <i class="bi bi-award text-warning"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">Domain Rating</div>
+                                    <small class="text-muted">Get current domain authority score</small>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="backlinks_stats" name="operations" value="backlinks_stats">
+                            <label class="form-check-label d-flex align-items-center" for="backlinks_stats">
+                                <div class="stat-icon bg-info bg-opacity-10 me-3 flex-shrink-0">
+                                    <i class="bi bi-link-45deg text-info"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">Backlinks Stats</div>
+                                    <small class="text-muted">Get current backlink statistics</small>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="top_keywords" name="operations" value="top_keywords">
+                            <label class="form-check-label d-flex align-items-center" for="top_keywords">
+                                <div class="stat-icon me-3 flex-shrink-0" style="background-color: rgba(111, 66, 193, 0.1);">
+                                    <i class="bi bi-key" style="color: #6f42c1;"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">Top Keywords</div>
+                                    <small class="text-muted">Get top 10 organic keywords</small>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="country_metrics" name="operations" value="country_metrics">
+                            <label class="form-check-label d-flex align-items-center" for="country_metrics">
+                                <div class="stat-icon me-3 flex-shrink-0" style="background-color: rgba(253, 126, 20, 0.1);">
+                                    <i class="bi bi-globe2" style="color: #fd7e14;"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">Country Metrics</div>
+                                    <small class="text-muted">Get traffic by country</small>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="history_metrics" name="operations" value="history_metrics">
+                            <label class="form-check-label d-flex align-items-center" for="history_metrics">
+                                <div class="stat-icon bg-primary bg-opacity-10 me-3 flex-shrink-0">
+                                    <i class="bi bi-clock-history text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-medium">Historical Metrics</div>
+                                    <small class="text-muted">Get historical data trends</small>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="historyMetricsConfig" class="mb-4" style="display: none;">
+                    <div class="border-top pt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <label class="form-label fw-medium mb-0">
+                                <i class="bi bi-calendar-range text-primary me-2"></i>Date Ranges
+                            </label>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="addHistoryRange">
+                                <i class="bi bi-plus-circle"></i>
+                            </button>
+                        </div>
+                        
+                        <div id="historyRangesList" class="mb-3">
+                            <div class="history-range-item border rounded p-3 mb-2 bg-light">
+                                <div class="row g-2">
+                                    <div class="col-5">
+                                        <label class="form-label small">From</label>
+                                        <input type="date" class="form-control form-control-sm date-from">
+                                    </div>
+                                    <div class="col-5">
+                                        <label class="form-label small">To</label>
+                                        <input type="date" class="form-control form-control-sm date-to">
+                                    </div>
+                                    <div class="col-2 d-flex align-items-end">
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-range">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <button type="button" class="btn btn-sm btn-outline-secondary w-100" id="addLast3MonthsRange">
+                                    <i class="bi bi-calendar-week me-1"></i>Last 3 Months
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-sm btn-outline-secondary w-100" id="addLastYearRange">
+                                    <i class="bi bi-calendar-date me-1"></i>Last Year
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-sm btn-outline-secondary w-100" id="addLast4YearsRange">
+                                    <i class="bi bi-calendar3 me-1"></i>Last 4 Years
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-sm btn-outline-secondary w-100" id="addLast5YearsRange">
+                                    <i class="bi bi-calendar3-range me-1"></i>Last 5 Years
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>               
+        
+                <div class="mb-4">
+                    <div class="border-top pt-3">
+                        <label class="form-label fw-medium">
+                            <i class="bi bi-globe2 text-primary me-2"></i>WWW Handling
+                        </label>
+                        <div class="www-options">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="www_mode" id="www_both" value="both" checked>
+                                <label class="form-check-label" for="www_both">
+                                    <strong>Both www and non-www</strong>
+                                    <small class="text-muted d-block">Fetch data for both versions (recommended)</small>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="www_mode" id="www_with" value="with_www">
+                                <label class="form-check-label" for="www_with">
+                                    <strong>With www only</strong>
+                                    <small class="text-muted d-block">Force www. prefix for all URLs</small>
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="www_mode" id="www_without" value="without_www">
+                                <label class="form-check-label" for="www_without">
+                                    <strong>Without www only</strong>
+                                    <small class="text-muted d-block">Remove www. prefix from all URLs</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-light rounded p-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-info-circle text-primary me-2"></i>
+                        <strong class="small">Summary</strong>
+                    </div>
+                    <div class="small text-muted" id="operationSummary">
+                        Select operations and URLs to begin
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-bullseye text-success me-2"></i>
+                        <h5 class="mb-0">Target URLs</h5>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-primary" id="selectAllUrls">
+                            <i class="bi bi-check-all me-1"></i>All
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="clearAllUrls">
+                            <i class="bi bi-x-square me-1"></i>Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <ul class="nav nav-pills nav-justified mb-3" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="stored-urls-tab" data-bs-toggle="pill" data-bs-target="#stored-urls-pane" type="button" role="tab">
+                            <i class="bi bi-database me-1"></i>
+                            Stored URLs
+                            <span class="badge bg-primary ms-2">{{ urls|length }}</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="new-urls-tab" data-bs-toggle="pill" data-bs-target="#new-urls-pane" type="button" role="tab">
+                            <i class="bi bi-plus-circle me-1"></i>
+                            Add New URLs
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="stored-urls-pane" role="tabpanel">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-8">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="urlSearch" placeholder="Search URLs...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-center h-100">
+                                    <small class="text-muted">
+                                        <span id="selectedCount">0</span> of 
+                                        <span id="visibleCount">{{ urls|length }}</span> selected
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if urls %}
+                            <div class="url-list-container border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+                                <div class="row g-2">
+                                    {% for url in urls %}
+                                    <div class="col-md-6">
+                                        <div class="form-check p-3 border rounded url-item" data-url="{{ url.url|lower }}" style="transition: all 0.2s ease;">
+                                            <input class="form-check-input url-checkbox" type="checkbox" id="url_{{ url.id }}" value="{{ url.id }}">
+                                            <label class="form-check-label w-100 cursor-pointer" for="url_{{ url.id }}">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="url-icon bg-primary bg-opacity-10 rounded-circle me-3 flex-shrink-0">
+                                                        <i class="bi bi-link-45deg text-primary"></i>
+                                                    </div>
+                                                    <div class="flex-grow-1 min-width-0">
+                                                        <h6 class="mb-1 text-truncate">{{ url.url }}</h6>
+                                                        <small class="text-muted">ID: {{ url.id }} • Added: {{ url.created_at.strftime('%m/%d/%Y') }}</small>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5 empty-state">
+                                <i class="bi bi-database text-muted" style="font-size: 4rem;"></i>
+                                <h4 class="mt-3 text-muted">No URLs Available</h4>
+                                <p class="text-muted mb-4">Add URLs to your database first</p>
+                                <a href="{{ url_for('ahrefs_urls') }}" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i>Add URLs
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="tab-pane fade" id="new-urls-pane" role="tabpanel">
+                        <div class="mb-3">
+                            <label for="newUrls" class="form-label fw-medium">
+                                <i class="bi bi-textarea-t me-2"></i>Add New URLs
+                            </label>
+                            <textarea class="form-control" id="newUrls" rows="10" 
+                                      placeholder="example.com&#10;another-site.com&#10;&#10;Enter one URL per line..."></textarea>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                URLs will be automatically added to your database and selected for operations
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <span id="newUrlCount">0</span> URLs entered
+                            </small>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-secondary" id="clearNewUrls">
+                                    <i class="bi bi-x me-1"></i>Clear
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" id="validateUrls">
+                                    <i class="bi bi-check-circle me-1"></i>Validate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row g-3 mt-3">
+            <div class="col-md-8">
+                <div class="card modern-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-rocket-takeoff text-primary" style="font-size: 3rem;"></i>
+                        <h5 class="mt-2 mb-1">Ready to Execute</h5>
+                        <p class="text-muted mb-3" id="executionSummary">Select operations and URLs</p>
+                        <button type="button" class="btn btn-primary btn-lg px-5" id="executeBtn" disabled>
+                            <i class="bi bi-play-circle me-2"></i>Execute Operations
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card modern-card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="bi bi-speedometer text-info me-2"></i>Operation Limits
+                        </h6>
+                        <div class="small text-muted">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Max URLs per batch:</span>
+                                <strong>100</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Rate limit:</span>
+                                <strong>60 req/min</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Estimated time:</span>
+                                <strong id="estimatedTime">-</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="executionModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-gear-wide-connected me-2"></i>Executing Operations
+                </h5>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card modern-card text-center">
+                            <div class="card-body py-3">
+                                <h4 class="mb-1 text-primary" id="progressStats">0 / 0</h4>
+                                <small class="text-muted">Operations Completed</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card modern-card text-center">
+                            <div class="card-body py-3">
+                                <h4 class="mb-1 text-info" id="timeRemaining">Calculating...</h4>
+                                <small class="text-muted">Estimated Time Left</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card modern-card text-center">
+                            <div class="card-body py-3">
+                                <h4 class="mb-1 text-success" id="successRate">0%</h4>
+                                <small class="text-muted">Success Rate</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-medium">Overall Progress</span>
+                        <span class="text-muted" id="percentComplete">0%</span>
+                    </div>
+                    <div class="progress" style="height: 12px;">
+                        <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated" 
+                             id="overallProgress" role="progressbar" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="fw-medium">
+                        <i class="bi bi-activity me-2"></i>Current Operation
+                    </h6>
+                    <div class="card modern-card">
+                        <div class="card-body py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm text-primary me-3" id="currentSpinner"></div>
+                                <div>
+                                    <div class="fw-medium" id="currentOperation">Preparing...</div>
+                                    <small class="text-muted" id="currentUrl">-</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-medium mb-0">
+                            <i class="bi bi-list-check me-2"></i>Operation Results
+                        </h6>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-success" id="showSuccessOnly">
+                                <i class="bi bi-check-circle me-1"></i>Success (<span id="successCount">0</span>)
+                            </button>
+                            <button class="btn btn-outline-danger" id="showErrorsOnly">
+                                <i class="bi bi-x-circle me-1"></i>Errors (<span id="errorCount">0</span>)
+                            </button>
+                            <button class="btn btn-outline-secondary active" id="showAllResults">
+                                <i class="bi bi-eye me-1"></i>All
+                            </button>
+                        </div>
+                    </div>
+                    <div class="results-container border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                        <div id="operationResults" class="text-muted text-center py-3">
+                            <i class="bi bi-hourglass-split"></i>
+                            Waiting for operations to start...
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" id="pauseBtn" disabled>
+                    <i class="bi bi-pause-circle me-1"></i>Pause
+                </button>
+                <button type="button" class="btn btn-outline-danger" id="cancelBtn">
+                    <i class="bi bi-stop-circle me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="closeBtn" style="display: none;">
+                    <i class="bi bi-check-circle me-1"></i>Complete
+                </button>
+                <a href="{{ url_for('ahrefs_data') }}" class="btn btn-success" id="viewDataBtn" style="display: none;">
+                    <i class="bi bi-database me-1"></i>View Data
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const operationCheckboxes = document.querySelectorAll('input[name="operations"]');
+    const urlCheckboxes = document.querySelectorAll('.url-checkbox');
+    const executeBtn = document.getElementById('executeBtn');
+    const historyMetricsConfig = document.getElementById('historyMetricsConfig');
+    const historyMetricsCheckbox = document.getElementById('history_metrics');
+    const addHistoryRangeBtn = document.getElementById('addHistoryRange');
+    const historyRangesList = document.getElementById('historyRangesList');
+    const operationSummary = document.getElementById('operationSummary');
+    const executionSummary = document.getElementById('executionSummary');
+    const estimatedTime = document.getElementById('estimatedTime');
+    const urlSearch = document.getElementById('urlSearch');
+    const newUrls = document.getElementById('newUrls');
+    const newUrlCount = document.getElementById('newUrlCount');
+    
+    let selectedOperations = [];
+    let selectedUrls = [];
+    let historyRanges = [];
+    let isExecuting = false;
+
+    function updateOperationState() {
+        selectedOperations = Array.from(operationCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+        
+        selectedUrls = Array.from(urlCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+
+        updateHistoryRanges();
+        updateSummaries();
+        updateExecuteButton();
+    }
+
+    function updateHistoryRanges() {
+        historyRanges = [];
+        const rangeItems = historyRangesList.querySelectorAll('.history-range-item');
+        
+        rangeItems.forEach(item => {
+            const fromDate = item.querySelector('.date-from').value;
+            const toDate = item.querySelector('.date-to').value;
+            
+            if (fromDate || toDate) {
+                historyRanges.push({
+                    from: fromDate || null,
+                    to: toDate || null
+                });
+            }
+        });
+    }
+
+    function updateSummaries() {
+        const operationCount = selectedOperations.length;
+        const urlCount = selectedUrls.length + (newUrls.value.trim() ? newUrls.value.trim().split('\n').filter(u => u.trim()).length : 0);
+        const historyRangeCount = historyMetricsCheckbox.checked ? Math.max(1, historyRanges.length) : 0;
+        
+        let totalOperations = 0;
+        if (selectedOperations.includes('history_metrics')) {
+            totalOperations = (operationCount - 1) * urlCount + historyRangeCount * urlCount;
+        } else {
+            totalOperations = operationCount * urlCount;
+        }
+        
+        if (operationCount === 0 || urlCount === 0) {
+            operationSummary.textContent = 'Select operations and URLs to begin';
+            executionSummary.textContent = 'Select operations and URLs';
+            estimatedTime.textContent = '-';
+        } else {
+            operationSummary.innerHTML = `
+                <strong>${operationCount}</strong> operation${operationCount > 1 ? 's' : ''} × 
+                <strong>${urlCount}</strong> URL${urlCount > 1 ? 's' : ''} = 
+                <strong>${totalOperations}</strong> total operation${totalOperations > 1 ? 's' : ''}
+                ${historyRangeCount > 0 ? `<br><small class="text-primary">Including ${historyRangeCount} historical range${historyRangeCount > 1 ? 's' : ''}</small>` : ''}
+            `;
+            
+            executionSummary.textContent = `${totalOperations} operations ready`;
+            
+            const estimatedMinutes = Math.ceil(totalOperations / 60);
+            estimatedTime.textContent = estimatedMinutes < 1 ? '< 1 min' : `~${estimatedMinutes} min`;
+        }
+    }
+
+    function updateExecuteButton() {
+        const hasOperations = selectedOperations.length > 0;
+        const hasUrls = selectedUrls.length > 0 || newUrls.value.trim();
+        
+        executeBtn.disabled = !hasOperations || !hasUrls || isExecuting;
+    }
+
+    operationCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            if (this.id === 'history_metrics') {
+                historyMetricsConfig.style.display = this.checked ? 'block' : 'none';
+            }
+            updateOperationState();
+        });
+    });
+
+    urlCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateOperationState);
+    });
+
+    document.getElementById('selectAllUrls').addEventListener('click', function() {
+        urlCheckboxes.forEach(cb => cb.checked = true);
+        updateOperationState();
+        updateUrlCounts();
+    });
+
+    document.getElementById('clearAllUrls').addEventListener('click', function() {
+        urlCheckboxes.forEach(cb => cb.checked = false);
+        updateOperationState();
+        updateUrlCounts();
+    });
+
+    addHistoryRangeBtn.addEventListener('click', function() {
+        if (historyRangesList.children.length >= 10) {
+            showToast('Maximum 10 historical ranges allowed', 'warning');
+            return;
+        }
+        
+        const rangeItem = document.createElement('div');
+        rangeItem.className = 'history-range-item border rounded p-3 mb-2 bg-light';
+        rangeItem.innerHTML = `
+            <div class="row g-2">
+                <div class="col-5">
+                    <label class="form-label small">From</label>
+                    <input type="date" class="form-control form-control-sm date-from">
+                </div>
+                <div class="col-5">
+                    <label class="form-label small">To</label>
+                    <input type="date" class="form-control form-control-sm date-to">
+                </div>
+                <div class="col-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-range">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        historyRangesList.appendChild(rangeItem);
+        
+        rangeItem.querySelector('.remove-range').addEventListener('click', function() {
+            rangeItem.remove();
+            updateOperationState();
+        });
+        
+        rangeItem.querySelectorAll('input[type="date"]').forEach(input => {
+            input.addEventListener('change', updateOperationState);
+        });
+        
+        updateOperationState();
+    });
+
+    document.getElementById('addLastYearRange').addEventListener('click', function() {
+        const now = new Date();
+        const lastYear = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        
+        addHistoryRangeBtn.click();
+        const lastRange = historyRangesList.lastElementChild;
+        lastRange.querySelector('.date-from').value = lastYear.toISOString().split('T')[0];
+        lastRange.querySelector('.date-to').value = now.toISOString().split('T')[0];
+        updateOperationState();
+    });
+
+    document.getElementById('addLast5YearsRange').addEventListener('click', function() {
+        const now = new Date();
+        const fiveYearsAgo = new Date(now.getFullYear() - 5, now.getMonth(), now.getDate());
+        
+        addHistoryRangeBtn.click();
+        const lastRange = historyRangesList.lastElementChild;
+        lastRange.querySelector('.date-from').value = fiveYearsAgo.toISOString().split('T')[0];
+        lastRange.querySelector('.date-to').value = now.toISOString().split('T')[0];
+        updateOperationState();
+    });
+
+    document.getElementById('addLast3MonthsRange').addEventListener('click', function() {
+        const now = new Date();
+        const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+        
+        addHistoryRangeBtn.click();
+        const lastRange = historyRangesList.lastElementChild;
+        lastRange.querySelector('.date-from').value = threeMonthsAgo.toISOString().split('T')[0];
+        lastRange.querySelector('.date-to').value = now.toISOString().split('T')[0];
+        updateOperationState();
+    });
+
+    document.getElementById('addLast4YearsRange').addEventListener('click', function() {
+        const now = new Date();
+        const fourYearsAgo = new Date(now.getFullYear() - 4, now.getMonth(), now.getDate());
+        
+        addHistoryRangeBtn.click();
+        const lastRange = historyRangesList.lastElementChild;
+        lastRange.querySelector('.date-from').value = fourYearsAgo.toISOString().split('T')[0];
+        lastRange.querySelector('.date-to').value = now.toISOString().split('T')[0];
+        updateOperationState();
+    });
+
+    document.querySelectorAll('.remove-range').forEach(btn => {
+        btn.addEventListener('click', function() {
+            btn.closest('.history-range-item').remove();
+            updateOperationState();
+        });
+    });
+
+    document.querySelectorAll('input[type="date"]').forEach(input => {
+        input.addEventListener('change', updateOperationState);
+    });
+
+    urlSearch.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const urlItems = document.querySelectorAll('.url-item');
+        let visibleCount = 0;
+        
+        urlItems.forEach(item => {
+            const url = item.dataset.url;
+            if (url.includes(searchTerm)) {
+                item.style.display = 'block';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('visibleCount').textContent = visibleCount;
+        updateUrlCounts();
+    });
+
+    newUrls.addEventListener('input', function() {
+        const urls = this.value.trim();
+        const count = urls ? urls.split('\n').filter(url => url.trim()).length : 0;
+        newUrlCount.textContent = count;
+        updateOperationState();
+    });
+
+    newUrls.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const paste = (e.clipboardData || window.clipboardData).getData('text');
+        const currentValue = this.value;
+        const start = this.selectionStart;
+        const end = this.selectionEnd;
+        
+        const newValue = currentValue.substring(0, start) + paste + currentValue.substring(end);
+        this.value = newValue;
+        
+        const urls = newValue.trim();
+        const count = urls ? urls.split('\n').filter(url => url.trim()).length : 0;
+        newUrlCount.textContent = count;
+        updateOperationState();
+        
+        this.setSelectionRange(start + paste.length, start + paste.length);
+    });
+
+    document.getElementById('clearNewUrls').addEventListener('click', function() {
+        newUrls.value = '';
+        newUrlCount.textContent = '0';
+        updateOperationState();
+    });
+
+    document.getElementById('validateUrls').addEventListener('click', function() {
+        const urls = newUrls.value.trim().split('\n').filter(url => url.trim());
+        const validUrls = [];
+        const invalidUrls = [];
+        
+        urls.forEach(url => {
+            if (validateUrl(url.trim())) {
+                validUrls.push(url.trim());
+            } else {
+                invalidUrls.push(url.trim());
+            }
+        });
+        
+        if (invalidUrls.length > 0) {
+            showToast(`Found ${invalidUrls.length} invalid URLs. Check console for details.`, 'warning');
+            console.log('Invalid URLs:', invalidUrls);
+        } else {
+            showToast(`All ${validUrls.length} URLs are valid!`, 'success');
+        }
+    });
+
+    function updateUrlCounts() {
+        const selectedCount = document.querySelectorAll('.url-checkbox:checked').length;
+        document.getElementById('selectedCount').textContent = selectedCount;
+    }
+
+    executeBtn.addEventListener('click', function() {
+        if (isExecuting) return;
+        
+        const selectedOperations = Array.from(operationCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+        
+        const selectedStoredUrls = Array.from(urlCheckboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+        
+        const newUrlsList = newUrls.value.trim() ? 
+            newUrls.value.trim().split('\n').filter(url => url.trim()) : [];
+        
+        const wwwMode = document.querySelector('input[name="www_mode"]:checked').value;
+        
+        if (selectedOperations.length === 0) {
+            showToast('Please select at least one operation', 'warning');
+            return;
+        }
+        
+        if (selectedStoredUrls.length === 0 && newUrlsList.length === 0) {
+            showToast('Please select at least one URL or add new URLs', 'warning');
+            return;
+        }
+
+        updateHistoryRanges();
+        
+        const executionData = {
+            operations: selectedOperations,
+            urls: selectedStoredUrls,
+            new_urls: newUrlsList.join('\n'),
+            dateRanges: historyRanges,
+            www_mode: wwwMode
+        };
+        
+        startExecution(executionData);
+    });
+
+    function startExecution(executionData) {
+        isExecuting = true;
+        updateExecuteButton();
+        
+        const modal = new bootstrap.Modal(document.getElementById('executionModal'));
+        modal.show();
+        
+        let totalOperations = 0;
+        let completedOperations = 0;
+        let successCount = 0;
+        let errorCount = 0;
+        let startTime = Date.now();
+        
+        const urlCount = executionData.urls.length + (executionData.new_urls ? executionData.new_urls.split('\n').filter(url => url.trim()).length : 0);
+        
+        executionData.operations.forEach(op => {
+            if (op === 'history_metrics') {
+                totalOperations += Math.max(1, executionData.dateRanges.length) * urlCount;
+            } else {
+                totalOperations += urlCount;
+            }
+        });
+        
+        document.getElementById('progressStats').textContent = `0 / ${totalOperations}`;
+        document.getElementById('operationResults').innerHTML = '<div class="text-muted text-center py-3"><i class="bi bi-hourglass-split"></i> Starting operations...</div>';
+        
+        fetch('/ahrefs/run_operation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(executionData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            isExecuting = false;
+            updateExecuteButton();
+            
+            if (data.status === 'success') {
+                completedOperations = totalOperations;
+                successCount = data.results.filter(r => r.status === 'success').length;
+                errorCount = data.results.filter(r => r.status === 'error').length;
+                
+                updateExecutionProgress(completedOperations, totalOperations, successCount, errorCount);
+                displayResults(data.results);
+                
+                document.getElementById('currentSpinner').style.display = 'none';
+                document.getElementById('currentOperation').textContent = 'Completed!';
+                document.getElementById('currentUrl').textContent = 'All operations finished';
+                document.getElementById('closeBtn').style.display = 'inline-block';
+                document.getElementById('viewDataBtn').style.display = 'inline-block';
+                document.getElementById('cancelBtn').style.display = 'none';
+                
+                showToast(`Operations completed! ${successCount} successful, ${errorCount} errors`, successCount > 0 ? 'success' : 'warning');
+            } else {
+                showToast('Execution failed: ' + (data.message || 'Unknown error'), 'error');
+                document.getElementById('operationResults').innerHTML = '<div class="alert alert-danger">Execution failed. Please try again.</div>';
+            }
+        })
+        .catch(error => {
+            isExecuting = false;
+            updateExecuteButton();
+            showToast('Network error: ' + error.message, 'error');
+            document.getElementById('operationResults').innerHTML = '<div class="alert alert-danger">Network error occurred. Please check your connection and try again.</div>';
+        });
+    }
+
+    function updateExecutionProgress(completed, total, success, errors) {
+        const percentage = Math.round((completed / total) * 100);
+        
+        document.getElementById('progressStats').textContent = `${completed} / ${total}`;
+        document.getElementById('percentComplete').textContent = `${percentage}%`;
+        document.getElementById('overallProgress').style.width = `${percentage}%`;
+        document.getElementById('successCount').textContent = success;
+        document.getElementById('errorCount').textContent = errors;
+        document.getElementById('successRate').textContent = total > 0 ? `${Math.round((success / total) * 100)}%` : '0%';
+        
+        if (completed === total) {
+            document.getElementById('timeRemaining').textContent = 'Completed';
+        }
+    }
+
+    function displayResults(results) {
+        const resultsContainer = document.getElementById('operationResults');
+        let resultsHtml = '';
+        
+        if (results.length === 0) {
+            resultsHtml = '<div class="text-muted text-center py-3">No results to display</div>';
+        } else {
+            results.forEach((result, index) => {
+                const isSuccess = result.status === 'success';
+                const iconClass = isSuccess ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger';
+                const cardClass = isSuccess ? 'border-success' : 'border-danger';
+                
+                let operationsText = '';
+                if (Array.isArray(result.operations)) {
+                    operationsText = result.operations.map(op => op.replace('_', ' ').toUpperCase()).join(', ');
+                } else if (result.operation) {
+                    operationsText = result.operation.replace('_', ' ').toUpperCase();
+                } else {
+                    operationsText = 'UNKNOWN';
+                }
+                
+                resultsHtml += `
+                    <div class="result-item card ${cardClass} mb-2" data-status="${result.status}">
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center">
+                                <i class="bi ${iconClass} me-2"></i>
+                                <div class="flex-grow-1">
+                                    <div class="fw-medium">${result.url}</div>
+                                    <small class="text-muted">${operationsText}</small>
+                                </div>
+                                ${isSuccess ? 
+                                    '<span class="badge bg-success">Success</span>' : 
+                                    `<span class="badge bg-danger" title="${result.error || 'Unknown error'}">Error</span>`
+                                }
+                            </div>
+                            ${!isSuccess && result.error ? `<small class="text-danger d-block mt-1">${result.error}</small>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        resultsContainer.innerHTML = resultsHtml;
+        resultsContainer.scrollTop = resultsContainer.scrollHeight;
+    }
+
+    document.getElementById('showSuccessOnly').addEventListener('click', function() {
+        filterResults('success');
+        updateFilterButtons(this);
+    });
+
+    document.getElementById('showErrorsOnly').addEventListener('click', function() {
+        filterResults('error');
+        updateFilterButtons(this);
+    });
+
+    document.getElementById('showAllResults').addEventListener('click', function() {
+        filterResults('all');
+        updateFilterButtons(this);
+    });
+
+    function filterResults(filter) {
+        const resultItems = document.querySelectorAll('.result-item');
+        
+        resultItems.forEach(item => {
+            if (filter === 'all') {
+                item.style.display = 'block';
+            } else {
+                item.style.display = item.dataset.status === filter ? 'block' : 'none';
+            }
+        });
+    }
+
+    function updateFilterButtons(activeButton) {
+        document.querySelectorAll('#executionModal .btn-group .btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        activeButton.classList.add('active');
+    }
+
+    document.getElementById('cancelBtn').addEventListener('click', function() {
+        if (isExecuting) {
+            isExecuting = false;
+            updateExecuteButton();
+            showToast('Execution cancelled', 'info');
+        }
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('executionModal'));
+        modal.hide();
+    });
+
+    document.querySelectorAll('.url-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-1px)';
+            this.style.boxShadow = 'var(--shadow-md)';
+            this.style.borderColor = 'var(--sidebar-active)';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+            this.style.borderColor = 'var(--border-color)';
+        });
+    });
+
+    updateOperationState();
+    updateUrlCounts();
+});
+
+function validateUrl(url) {
+    const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+    return urlPattern.test(url);
+}
+
+function showToast(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : type === 'warning' ? 'alert-warning' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 15000);
+}
+</script>
+
+<style>
+.url-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--bs-border-color) !important;
+}
+
+.url-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-color: #0d6efd !important;
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+
+.operation-list .form-check-label:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.nav-pills .nav-link {
+    transition: all 0.2s ease;
+}
+
+.nav-pills .nav-link:hover:not(.active) {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.modal-content {
+    border: none;
+    box-shadow: 0 1rem 3rem rgba(0,0,0,0.175);
+}
+
+.progress-bar {
+    transition: width 0.5s ease;
+}
+
+.result-item {
+    transition: all 0.2s ease;
+}
+
+.result-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.results-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.results-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.results-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.results-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.url-list-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.url-list-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.url-list-container::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.url-list-container::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
+
+#newUrls {
+    font-family: monospace;
+    resize: vertical;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1.25rem;
+}
+
+.url-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .url-list-container {
+        max-height: 300px !important;
+    }
+    
+    .results-container {
+        max-height: 200px !important;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.25rem;
+    }
+    
+    .modal-dialog {
+        margin: 10px;
+    }
+    
+    .row.g-3 {
+        --bs-gutter-x: 0.5rem;
+        --bs-gutter-y: 0.5rem;
+    }
+    
+    .nav-pills {
+        flex-direction: column;
+    }
+    
+    .nav-pills .nav-link {
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+    
+    .url-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+    
+    h5 {
+        font-size: 1.1rem;
+    }
+    
+    .card-header h5 {
+        font-size: 1rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+</style>
+{% endblock %}

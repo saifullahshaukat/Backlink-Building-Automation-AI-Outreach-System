@@ -1,0 +1,597 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Analytics Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-blue h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-link-45deg text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ stats.ahrefs.url_count }}</h3>
+                        <p class="text-white-50 mb-0">Ahrefs URLs</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-green h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-collection text-success"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ stats.scraping.total_records }}</h3>
+                        <p class="text-white-50 mb-0">Scraped Records</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-purple h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-send text-info"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ stats.outreach.bot_stats.forms_submitted }}</h3>
+                        <p class="text-white-50 mb-0">Forms Submitted</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-orange h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-shield-x text-warning"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ stats.suppressed_count }}</h3>
+                        <p class="text-white-50 mb-0">Suppressed URLs</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card modern-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-graph-up text-success me-2"></i>
+                    <h5 class="mb-0">Performance Overview</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 text-center">
+                    <div class="col-6">
+                        <div class="performance-stat">
+                            <div class="stat-circle bg-primary bg-opacity-10 mb-3">
+                                <i class="bi bi-database text-primary"></i>
+                            </div>
+                            <h4 class="mb-1 fw-bold">{{ stats.ahrefs.data_count }}</h4>
+                            <p class="text-muted mb-0">Ahrefs Data Records</p>
+                            <div class="progress mt-2" style="height: 4px;">
+                                <div class="progress-bar bg-primary" style="width: {{ (stats.ahrefs.data_count / stats.ahrefs.url_count * 100) if stats.ahrefs.url_count > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="performance-stat">
+                            <div class="stat-circle bg-success bg-opacity-10 mb-3">
+                                <i class="bi bi-check-circle text-success"></i>
+                            </div>
+                            <h4 class="mb-1 fw-bold">{{ ((stats.ahrefs.data_count / stats.ahrefs.url_count * 100)|round(1)) if stats.ahrefs.url_count > 0 else 0 }}%</h4>
+                            <p class="text-muted mb-0">Ahrefs Urls Containing Data</p>
+                            <div class="progress mt-2" style="height: 4px;">
+                                <div class="progress-bar bg-success" style="width: {{ (stats.ahrefs.data_count / stats.ahrefs.url_count * 100) if stats.ahrefs.url_count > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="text-muted mb-3">Data Distribution</h6>
+                    <div class="row g-2 text-center">
+                        <div class="col-6">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small">Adsy Records</span>
+                                <strong>{{ stats.scraping.adsy_records }}</strong>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: {{ (stats.scraping.adsy_records / stats.scraping.total_records * 100) if stats.scraping.total_records > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="small">Icopify Records</span>
+                                <strong>{{ stats.scraping.icopify_records }}</strong>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar bg-info" style="width: {{ (stats.scraping.icopify_records / stats.scraping.total_records * 100) if stats.scraping.total_records > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card modern-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-activity text-warning me-2"></i>
+                    <h5 class="mb-0">System Status</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="status-indicator bg-{{ 'success' if not stats.scraping.is_running else 'primary' }} me-3"></div>
+                                <span class="fw-medium">Web Scraper</span>
+                            </div>
+                            <span class="badge bg-{{ 'success' if not stats.scraping.is_running else 'primary' }}">
+                                {{ 'Idle' if not stats.scraping.is_running else 'Running' }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="status-item">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="status-indicator bg-{{ 'success' if stats.outreach.bot_stats.status != 'Running' else 'primary' }} me-3"></div>
+                                <span class="fw-medium">Outreach Bot</span>
+                            </div>
+                            <span class="badge bg-{{ 'success' if stats.outreach.bot_stats.status != 'Running' else 'primary' }}">
+                                {{ stats.outreach.bot_stats.status }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="text-muted mb-3">Outreach Progress</h6>
+                    <div class="row g-3 text-center">
+                        <div class="col-4">
+                            <div class="mini-stat">
+                                <div class="display-6 text-info">{{ stats.outreach.bot_stats.urls_processed }}</div>
+                                <small class="text-muted">Processed</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="mini-stat">
+                                <div class="display-6 text-warning">{{ stats.outreach.bot_stats.forms_found }}</div>
+                                <small class="text-muted">Forms Found</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="mini-stat">
+                                <div class="display-6 text-danger">{{ stats.outreach.bot_stats.errors }}</div>
+                                <small class="text-muted">Errors</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-clock-history text-primary me-2"></i>
+                        <h5 class="mb-0">Recent Activity</h5>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary active" onclick="showActivity('scraping')">Scraping</button>
+                        <button class="btn btn-outline-primary" onclick="showActivity('outreach')">Outreach</button>
+                        <button class="btn btn-outline-primary" onclick="showActivity('ahrefs')">Ahrefs</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="scrapingActivity">
+                    {% if stats.recent_sessions %}
+                        <div class="activity-list">
+                            {% for session in stats.recent_sessions %}
+                            <div class="activity-item">
+                                <div class="activity-icon bg-{{ 'success' if session.source == 'adsy' else 'info' }} bg-opacity-10 rounded-circle">
+                                    <i class="bi bi-robot text-{{ 'success' if session.source == 'adsy' else 'info' }}"></i>
+                                </div>
+                                <div class="activity-content flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{ session.source.title() }} Scraping Session</h6>
+                                            <p class="text-muted small mb-1">Pages {{ session.start_page }}-{{ session.start_page + session.pages_to_scrape - 1 }} • {{ session.records_scraped }} records</p>
+                                            <small class="text-muted">{{ session.started_at.strftime('%b %d, %Y at %H:%M') }}</small>
+                                        </div>
+                                        <span class="badge bg-{{ 'success' if session.status == 'completed' else 'danger' if session.status == 'failed' else 'primary' }}">
+                                            {{ session.status.title() }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state text-center py-4">
+                            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                            <h6 class="mt-2 text-muted">No scraping sessions yet</h6>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div id="outreachActivity" style="display: none;">
+                    {% if stats.outreach.bot_stats.current_url %}
+                        <div class="current-activity mb-3 p-3 bg-light rounded">
+                            <h6 class="mb-2">Currently Processing</h6>
+                            <div class="text-truncate small">{{ stats.outreach.bot_stats.current_url }}</div>
+                        </div>
+                    {% endif %}
+                    <div class="row g-3 text-center">
+                        <div class="col-3">
+                            <div class="mini-stat">
+                                <div class="display-6 text-primary">{{ stats.outreach.bot_stats.urls_processed }}</div>
+                                <small class="text-muted">URLs Processed</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="mini-stat">
+                                <div class="display-6 text-success">{{ stats.outreach.bot_stats.forms_found }}</div>
+                                <small class="text-muted">Forms Found</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="mini-stat">
+                                <div class="display-6 text-info">{{ stats.outreach.bot_stats.forms_submitted }}</div>
+                                <small class="text-muted">Submitted</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="mini-stat">
+                                <div class="display-6 text-danger">{{ stats.outreach.bot_stats.errors }}</div>
+                                <small class="text-muted">Errors</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ahrefsActivity" style="display: none;">
+                    {% if stats.ahrefs.recent_data %}
+                        <div class="activity-list">
+                            {% for data in stats.ahrefs.recent_data %}
+                            <div class="activity-item">
+                                <div class="activity-icon bg-primary bg-opacity-10 rounded-circle">
+                                    <i class="bi bi-database text-primary"></i>
+                                </div>
+                                <div class="activity-content flex-grow-1">
+                                    <h6 class="mb-1 text-truncate">{{ data.url.url }}</h6>
+                                    <small class="text-muted">{{ data.fetched_at.strftime('%b %d, %Y at %H:%M') }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state text-center py-4">
+                            <i class="bi bi-database text-muted" style="font-size: 3rem;"></i>
+                            <h6 class="mt-2 text-muted">No Ahrefs data yet</h6>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card modern-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-lightning text-warning me-2"></i>
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <a href="{{ url_for('ahrefs_urls') }}" class="btn btn-outline-primary btn-action">
+                        <i class="bi bi-link-45deg me-2"></i>
+                        <div>
+                            <div class="fw-medium">Manage URLs</div>
+                            <small class="text-muted">Add & organize URLs</small>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ url_for('ahrefs_execute') }}" class="btn btn-outline-success btn-action">
+                        <i class="bi bi-play-circle me-2"></i>
+                        <div>
+                            <div class="fw-medium">Run Ahrefs Analysis</div>
+                            <small class="text-muted">Fetch SEO data</small>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ url_for('scraper_data') }}" class="btn btn-outline-info btn-action">
+                        <i class="bi bi-collection me-2"></i>
+                        <div>
+                            <div class="fw-medium">View Scraped Data</div>
+                            <small class="text-muted">Browse collected data</small>
+                        </div>
+                    </a>
+                    
+                    <a href="{{ url_for('outreach_execute') }}" class="btn btn-outline-warning btn-action">
+                        <i class="bi bi-send me-2"></i>
+                        <div>
+                            <div class="fw-medium">Start Outreach</div>
+                            <small class="text-muted">Launch outreach campaigns</small>
+                        </div>
+                    </a>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle w-100 btn-action" data-bs-toggle="dropdown">
+                            <i class="bi bi-download me-2"></i>
+                            <div>
+                                <div class="fw-medium">Export Data</div>
+                                <small class="text-muted">Download reports</small>
+                            </div>
+                        </button>
+                        <ul class="dropdown-menu w-100">
+                            <li><a class="dropdown-item" href="{{ url_for('export_ahrefs_urls') }}">Ahrefs URLs</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('export_ahrefs_data') }}">Ahrefs Data</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('export_scraper_data') }}">Scraped Data</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('export_suppression') }}">Suppression List</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.modern-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+
+function showNotification(message, type = 'info') {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : type === 'warning' ? 'alert-warning' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 15000);
+}
+
+function showActivity(type) {
+    document.querySelectorAll('#scrapingActivity, #outreachActivity, #ahrefsActivity').forEach(el => {
+        el.style.display = 'none';
+    });
+    document.getElementById(type + 'Activity').style.display = 'block';
+    
+    document.querySelectorAll('.btn-group .btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+</script>
+
+<style>
+.gradient-card-blue {
+    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+    border: none;
+    box-shadow: 0 4px 20px rgba(0,123,255,0.15);
+}
+
+.gradient-card-green {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    box-shadow: 0 4px 20px rgba(40,167,69,0.15);
+}
+
+.gradient-card-purple {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    border: none;
+    box-shadow: 0 4px 20px rgba(111,66,193,0.15);
+}
+
+.gradient-card-orange {
+    background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+    border: none;
+    box-shadow: 0 4px 20px rgba(253,126,20,0.15);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+}
+
+.modern-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.modern-card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.performance-stat .stat-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    font-size: 1.5rem;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.mini-stat {
+    padding: 0.5rem;
+}
+
+.activity-list {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    min-width: 0;
+}
+
+.btn-action {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.empty-state {
+    opacity: 0.6;
+}
+
+.card-header {
+    background: rgba(248, 249, 250, 0.8);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    border-radius: 16px 16px 0 0;
+}
+
+.btn-group .btn.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
+.status-grid .status-item {
+    padding: 0.75rem 0;
+}
+
+.current-activity {
+    border-left: 4px solid var(--bs-primary);
+}
+
+@media (max-width: 768px) {
+    .modern-card:hover {
+        transform: none;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    
+    .btn-action:hover {
+        transform: none;
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .performance-stat .stat-circle {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.25rem;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,800 @@
+{% extends "base.html" %}
+
+{% block title %}System Stats{% endblock %}
+{% block page_title %}System Statistics{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-speedometer2 text-primary me-2"></i>
+                        <h5 class="mb-0">Real-Time Monitoring</h5>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center">
+                            <label class="me-2 mb-0 small">Update Interval:</label>
+                            <select id="refreshInterval" class="form-select form-select-sm" style="width: auto;">
+                                <option value="1000">1 second</option>
+                                <option value="2000" selected>2 seconds</option>
+                                <option value="5000">5 seconds</option>
+                                <option value="10000">10 seconds</option>
+                                <option value="30000">30 seconds</option>
+                                <option value="60000">1 minute</option>
+                                <option value="120000">2 minutes</option>
+                            </select>
+                        </div>
+                        <button id="pauseBtn" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-pause-fill"></i> Pause
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-blue h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-cpu text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold" id="cpuPercent">0%</h3>
+                        <p class="text-white-50 mb-0">CPU Usage</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-green h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-memory text-success"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold" id="memoryPercent">0%</h3>
+                        <p class="text-white-50 mb-0">Memory Usage</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-purple h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-hdd text-info"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold" id="diskPercent">0%</h3>
+                        <p class="text-white-50 mb-0">Disk Usage</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-orange h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-hdd-network text-warning"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold" id="networkConnections">0</h3>
+                        <p class="text-white-50 mb-0">Connections</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card modern-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-cpu text-primary me-2"></i>
+                    <h5 class="mb-0">CPU Details</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-medium">Overall Usage</span>
+                        <span id="cpuPercentDetail" class="fw-bold">0%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div id="cpuProgressBar" class="progress-bar bg-primary" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Physical Cores</small>
+                            <div class="h5 mb-0" id="cpuPhysical">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Logical Cores</small>
+                            <div class="h5 mb-0" id="cpuLogical">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Current Frequency</small>
+                            <div class="h6 mb-0" id="cpuFreqCurrent">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Max Frequency</small>
+                            <div class="h6 mb-0" id="cpuFreqMax">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h6 class="mb-3">Per-Core Usage</h6>
+                    <div id="cpuCores" class="cpu-cores-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card modern-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-memory text-success me-2"></i>
+                    <h5 class="mb-0">Memory Details</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-medium">RAM Usage</span>
+                        <span id="memoryPercentDetail" class="fw-bold">0%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div id="memoryProgressBar" class="progress-bar bg-success" style="width: 0%"></div>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2 small text-muted">
+                        <span id="memoryUsed">0 GB</span>
+                        <span id="memoryTotal">0 GB</span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-4">
+                        <div class="stat-box">
+                            <small class="text-muted">Available</small>
+                            <div class="h6 mb-0" id="memoryAvailable">-</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box">
+                            <small class="text-muted">Free</small>
+                            <div class="h6 mb-0" id="memoryFree">-</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-box">
+                            <small class="text-muted">Cached</small>
+                            <div class="h6 mb-0" id="memoryCached">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-top pt-3">
+                    <h6 class="mb-3">Swap Memory</h6>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="small">Swap Usage</span>
+                            <span id="swapPercent" class="small fw-bold">0%</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div id="swapProgressBar" class="progress-bar bg-warning" style="width: 0%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2 small text-muted">
+                            <span id="swapUsed">0 GB</span>
+                            <span id="swapTotal">0 GB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card modern-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-hdd text-info me-2"></i>
+                    <h5 class="mb-0">Disk Usage</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="diskPartitions"></div>
+                
+                <div class="border-top pt-3 mt-3">
+                    <h6 class="mb-3">Disk I/O</h6>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="stat-box">
+                                <small class="text-muted">Read</small>
+                                <div class="h6 mb-0" id="diskRead">-</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-box">
+                                <small class="text-muted">Write</small>
+                                <div class="h6 mb-0" id="diskWrite">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card modern-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-hdd-network text-warning me-2"></i>
+                    <h5 class="mb-0">Network Activity</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Bytes Sent</small>
+                            <div class="h6 mb-0" id="networkSent">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Bytes Received</small>
+                            <div class="h6 mb-0" id="networkRecv">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Packets Sent</small>
+                            <div class="h6 mb-0" id="packetsSent">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Packets Received</small>
+                            <div class="h6 mb-0" id="packetsRecv">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-top pt-3">
+                    <h6 class="mb-3">Network Errors</h6>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="stat-box">
+                                <small class="text-muted">Errors In/Out</small>
+                                <div class="h6 mb-0"><span id="errorsIn">0</span> / <span id="errorsOut">0</span></div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-box">
+                                <small class="text-muted">Drops In/Out</small>
+                                <div class="h6 mb-0"><span id="dropsIn">0</span> / <span id="dropsOut">0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-list-task text-danger me-2"></i>
+                    <h5 class="mb-0">Top Processes</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <ul class="nav nav-tabs mb-3">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#topCPU">Top CPU</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#topMemory">Top Memory</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="topCPU">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>PID</th>
+                                        <th>Name</th>
+                                        <th>CPU %</th>
+                                        <th>Memory %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topCPUTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="topMemory">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>PID</th>
+                                        <th>Name</th>
+                                        <th>CPU %</th>
+                                        <th>Memory %</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topMemoryTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-info-circle text-secondary me-2"></i>
+                    <h5 class="mb-0">System Information</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Platform</small>
+                            <div class="fw-medium" id="sysPlatform">-</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Hostname</small>
+                            <div class="fw-medium" id="sysHostname">-</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Architecture</small>
+                            <div class="fw-medium" id="sysArch">-</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Uptime</small>
+                            <div class="fw-medium" id="sysUptime">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-4 mt-2">
+                    <div class="col-lg-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Processor</small>
+                            <div class="fw-medium" id="sysProcessor">-</div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="stat-box">
+                            <small class="text-muted">Boot Time</small>
+                            <div class="fw-medium" id="sysBootTime">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let refreshInterval = 2000;
+let isPaused = false;
+let refreshTimer = null;
+
+function formatBytes(bytes) {
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let size = bytes;
+    let unitIndex = 0;
+    
+    while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
+        unitIndex++;
+    }
+    
+    return `${size.toFixed(2)} ${units[unitIndex]}`;
+}
+
+function updateStats() {
+    if (isPaused) return;
+    
+    fetch('/api/system-stats')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const stats = data.stats;
+                
+                document.getElementById('cpuPercent').textContent = `${stats.cpu.total_percent.toFixed(1)}%`;
+                document.getElementById('cpuPercentDetail').textContent = `${stats.cpu.total_percent.toFixed(1)}%`;
+                document.getElementById('cpuProgressBar').style.width = `${stats.cpu.total_percent}%`;
+                
+                document.getElementById('memoryPercent').textContent = `${stats.memory.virtual.percent.toFixed(1)}%`;
+                document.getElementById('memoryPercentDetail').textContent = `${stats.memory.virtual.percent.toFixed(1)}%`;
+                document.getElementById('memoryProgressBar').style.width = `${stats.memory.virtual.percent}%`;
+                document.getElementById('memoryUsed').textContent = formatBytes(stats.memory.virtual.used);
+                document.getElementById('memoryTotal').textContent = formatBytes(stats.memory.virtual.total);
+                document.getElementById('memoryAvailable').textContent = formatBytes(stats.memory.virtual.available);
+                document.getElementById('memoryFree').textContent = formatBytes(stats.memory.virtual.free);
+                document.getElementById('memoryCached').textContent = formatBytes(stats.memory.virtual.total - stats.memory.virtual.available - stats.memory.virtual.used);
+                
+                if (stats.disk.partitions.length > 0) {
+                    const mainDisk = stats.disk.partitions[0];
+                    document.getElementById('diskPercent').textContent = `${mainDisk.percent.toFixed(1)}%`;
+                }
+                
+                document.getElementById('networkConnections').textContent = stats.network.connections;
+                
+                document.getElementById('cpuPhysical').textContent = stats.cpu.count_physical;
+                document.getElementById('cpuLogical').textContent = stats.cpu.count_logical;
+                document.getElementById('cpuFreqCurrent').textContent = `${stats.cpu.frequency.current.toFixed(0)} MHz`;
+                document.getElementById('cpuFreqMax').textContent = `${stats.cpu.frequency.max.toFixed(0)} MHz`;
+                
+                const cpuCoresDiv = document.getElementById('cpuCores');
+                cpuCoresDiv.innerHTML = '';
+                stats.cpu.per_cpu.forEach((usage, index) => {
+                    const coreDiv = document.createElement('div');
+                    coreDiv.className = 'cpu-core-item';
+                    coreDiv.innerHTML = `
+                        <div class="d-flex justify-content-between mb-1">
+                            <small>Core ${index}</small>
+                            <small class="fw-bold">${usage.toFixed(1)}%</small>
+                        </div>
+                        <div class="progress" style="height: 4px;">
+                            <div class="progress-bar ${usage > 80 ? 'bg-danger' : usage > 50 ? 'bg-warning' : 'bg-primary'}" 
+                                 style="width: ${usage}%"></div>
+                        </div>
+                    `;
+                    cpuCoresDiv.appendChild(coreDiv);
+                });
+                
+                document.getElementById('swapPercent').textContent = `${stats.memory.swap.percent.toFixed(1)}%`;
+                document.getElementById('swapProgressBar').style.width = `${stats.memory.swap.percent}%`;
+                document.getElementById('swapUsed').textContent = formatBytes(stats.memory.swap.used);
+                document.getElementById('swapTotal').textContent = formatBytes(stats.memory.swap.total);
+                
+                const diskPartitionsDiv = document.getElementById('diskPartitions');
+                diskPartitionsDiv.innerHTML = '';
+                stats.disk.partitions.forEach(partition => {
+                    const partDiv = document.createElement('div');
+                    partDiv.className = 'mb-3';
+                    partDiv.innerHTML = `
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="small fw-medium">${partition.device} (${partition.mountpoint})</span>
+                            <span class="small fw-bold">${partition.percent.toFixed(1)}%</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar ${partition.percent > 80 ? 'bg-danger' : partition.percent > 60 ? 'bg-warning' : 'bg-info'}" 
+                                 style="width: ${partition.percent}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1 small text-muted">
+                            <span>${formatBytes(partition.used)} / ${formatBytes(partition.total)}</span>
+                            <span>${formatBytes(partition.free)} free</span>
+                        </div>
+                    `;
+                    diskPartitionsDiv.appendChild(partDiv);
+                });
+                
+                document.getElementById('diskRead').textContent = formatBytes(stats.disk.io.read_bytes);
+                document.getElementById('diskWrite').textContent = formatBytes(stats.disk.io.write_bytes);
+                
+                document.getElementById('networkSent').textContent = formatBytes(stats.network.bytes_sent);
+                document.getElementById('networkRecv').textContent = formatBytes(stats.network.bytes_recv);
+                document.getElementById('packetsSent').textContent = stats.network.packets_sent.toLocaleString();
+                document.getElementById('packetsRecv').textContent = stats.network.packets_recv.toLocaleString();
+                document.getElementById('errorsIn').textContent = stats.network.errors_in;
+                document.getElementById('errorsOut').textContent = stats.network.errors_out;
+                document.getElementById('dropsIn').textContent = stats.network.drop_in;
+                document.getElementById('dropsOut').textContent = stats.network.drop_out;
+                
+                const topCPUTable = document.getElementById('topCPUTable');
+                topCPUTable.innerHTML = '';
+                stats.processes.top_cpu.forEach(proc => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${proc.pid}</td>
+                        <td>${proc.name}</td>
+                        <td><span class="badge bg-${(proc.cpu_percent || 0) > 50 ? 'danger' : 'primary'}">${(proc.cpu_percent || 0).toFixed(1)}%</span></td>
+                        <td>${(proc.memory_percent || 0).toFixed(1)}%</td>
+                    `;
+                    topCPUTable.appendChild(row);
+                });
+                
+                const topMemoryTable = document.getElementById('topMemoryTable');
+                topMemoryTable.innerHTML = '';
+                stats.processes.top_memory.forEach(proc => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${proc.pid}</td>
+                        <td>${proc.name}</td>
+                        <td>${(proc.cpu_percent || 0).toFixed(1)}%</td>
+                        <td><span class="badge bg-${(proc.memory_percent || 0) > 50 ? 'danger' : 'success'}">${(proc.memory_percent || 0).toFixed(1)}%</span></td>
+                    `;
+                    topMemoryTable.appendChild(row);
+                });
+                
+                document.getElementById('sysPlatform').textContent = `${stats.system.platform} ${stats.system.platform_release}`;
+                document.getElementById('sysHostname').textContent = stats.system.hostname;
+                document.getElementById('sysArch').textContent = stats.system.architecture;
+                document.getElementById('sysUptime').textContent = stats.system.uptime;
+                document.getElementById('sysProcessor').textContent = stats.system.processor;
+                document.getElementById('sysBootTime').textContent = stats.system.boot_time;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching stats:', error);
+        });
+}
+
+document.getElementById('refreshInterval').addEventListener('change', function() {
+    refreshInterval = parseInt(this.value);
+    if (refreshTimer) {
+        clearInterval(refreshTimer);
+        refreshTimer = setInterval(updateStats, refreshInterval);
+    }
+});
+
+document.getElementById('pauseBtn').addEventListener('click', function() {
+    isPaused = !isPaused;
+    const icon = this.querySelector('i');
+    
+    if (isPaused) {
+        this.innerHTML = '<i class="bi bi-play-fill"></i> Resume';
+        this.classList.remove('btn-outline-warning');
+        this.classList.add('btn-outline-success');
+        if (refreshTimer) {
+            clearInterval(refreshTimer);
+            refreshTimer = null;
+        }
+    } else {
+        this.innerHTML = '<i class="bi bi-pause-fill"></i> Pause';
+        this.classList.remove('btn-outline-success');
+        this.classList.add('btn-outline-warning');
+        updateStats();
+        refreshTimer = setInterval(updateStats, refreshInterval);
+    }
+});
+
+updateStats();
+refreshTimer = setInterval(updateStats, refreshInterval);
+
+window.addEventListener('beforeunload', function() {
+    if (refreshTimer) {
+        clearInterval(refreshTimer);
+    }
+});
+</script>
+
+<style>
+.gradient-card-blue {
+    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+    border: none;
+    box-shadow: 0 4px 20px rgba(0,123,255,0.15);
+}
+
+.gradient-card-green {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    box-shadow: 0 4px 20px rgba(40,167,69,0.15);
+}
+
+.gradient-card-purple {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    border: none;
+    box-shadow: 0 4px 20px rgba(111,66,193,0.15);
+}
+
+.gradient-card-orange {
+    background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+    border: none;
+    box-shadow: 0 4px 20px rgba(253,126,20,0.15);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+}
+
+.modern-card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.modern-card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.stat-box {
+    padding: 0.75rem;
+    background: rgba(248, 249, 250, 0.8);
+    border-radius: 8px;
+    border-left: 3px solid var(--bs-primary);
+}
+
+.cpu-cores-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.cpu-core-item {
+    padding: 0.75rem;
+    background: rgba(248, 249, 250, 0.5);
+    border-radius: 8px;
+}
+
+.card-header {
+    background: rgba(248, 249, 250, 0.8);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    border-radius: 16px 16px 0 0;
+}
+
+.progress {
+    border-radius: 10px;
+    background-color: rgba(0,0,0,0.05);
+}
+
+.progress-bar {
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    border-bottom: 2px solid rgba(0,0,0,0.1);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #6c757d;
+    padding: 0.75rem;
+}
+
+.table tbody td {
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+.nav-tabs {
+    border-bottom: 2px solid rgba(0,0,0,0.05);
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #6c757d;
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--bs-primary);
+    border-bottom: 2px solid var(--bs-primary);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--bs-primary);
+    background: transparent;
+    border-bottom: 2px solid var(--bs-primary);
+}
+
+@media (max-width: 768px) {
+    .modern-card:hover {
+        transform: none;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+    }
+    
+    .cpu-cores-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .card-header .d-flex {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .card-header .d-flex > div:last-child {
+        width: 100%;
+    }
+    
+    .card-header select {
+        width: 100% !important;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.modern-card {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %}

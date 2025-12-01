@@ -1,0 +1,903 @@
+{% extends "base.html" %}
+
+{% block title %}Scraped Data{% endblock %}
+{% block page_title %}Scraped Data Management{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-green h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-collection text-success"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ pagination.total or 0 }}</h3>
+                        <p class="text-white-50 mb-0">Total Records</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-blue h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-database text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ pagination.items|selectattr('source', 'equalto', 'adsy')|list|length }}</h3>
+                        <p class="text-white-50 mb-0">Adsy Records</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-purple h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-database-fill text-info"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ pagination.items|selectattr('source', 'equalto', 'icopify')|list|length }}</h3>
+                        <p class="text-white-50 mb-0">Icopify Records</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-orange h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-funnel text-warning"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ 'Active' if source_filter else 'None' }}</h3>
+                        <p class="text-white-50 mb-0">Filter Applied</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card modern-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-upload text-success me-2"></i>
+                    <h5 class="mb-0">Import Data</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-medium">File Type</label>
+                    <select id="importFileType" class="form-select">
+                        <option value="csv">CSV File</option>
+                        <option value="plain">Plain URLs</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Target</label>
+                    <select id="importTarget" class="form-select">
+                        <option value="scraper_data">Scraped Data</option>
+                        <option value="suppression">Suppression List</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Content</label>
+                    <textarea id="importData" rows="6" placeholder="Paste your CSV content or URLs here..." class="form-control font-monospace"></textarea>
+                </div>
+                <button onclick="bulkImport()" class="btn btn-success w-100">
+                    <i class="bi bi-upload me-2"></i>Import Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card modern-card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-download text-primary me-2"></i>
+                    <h5 class="mb-0">Export & Management</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Export Source</label>
+                    <select id="exportSource" class="form-select">
+                        <option value="">All Sources</option>
+                        <option value="adsy">Adsy Only</option>
+                        <option value="icopify">Icopify Only</option>
+                    </select>
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <button onclick="exportData()" class="btn btn-primary w-100">
+                            <i class="bi bi-download me-1"></i>Export Data
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button onclick="exportSuppression()" class="btn btn-info w-100">
+                            <i class="bi bi-shield-x me-1"></i>Export Suppression
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="border-top pt-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">
+                            <i class="bi bi-trash text-warning me-2"></i>Bulk Remove URLs
+                        </label>
+                        <textarea id="bulkRemoveUrls" rows="4" placeholder="URLs to remove (one per line)..." class="form-control font-monospace"></textarea>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <button onclick="bulkRemove('data')" class="btn btn-outline-warning btn-sm w-100">
+                                <i class="bi bi-database-x me-1"></i>From Data
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button onclick="bulkRemove('suppression')" class="btn btn-outline-danger btn-sm w-100">
+                                <i class="bi bi-shield-x me-1"></i>From Suppression
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="confirmClearData()" class="btn btn-danger w-100">
+                        <i class="bi bi-trash-fill me-2"></i>Clear All Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card modern-card mb-4">
+    <div class="card-header">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-search text-primary me-2"></i>
+            <h5 class="mb-0">Search & Filter</h5>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label fw-medium">Search URLs</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="search" value="{{ search or '' }}" placeholder="Search by URL..." class="form-control">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-medium">Source Filter</label>
+                <select name="source" class="form-select">
+                    <option value="">All Sources</option>
+                    <option value="adsy" {% if source_filter == 'adsy' %}selected{% endif %}>Adsy</option>
+                    <option value="icopify" {% if source_filter == 'icopify' %}selected{% endif %}>Icopify</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card modern-card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-table text-success me-2"></i>
+                <h5 class="mb-0">Data Records</h5>
+            </div>
+            {% if pagination.items %}
+            <div class="text-muted small">
+                Showing {{ (pagination.page - 1) * 50 + 1 }}-{{ (pagination.page - 1) * 50 + pagination.items|length }} of {{ pagination.total }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover data-table mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="border-0">URL</th>
+                        <th class="border-0">Source</th>
+                        <th class="border-0">Categories</th>
+                        <th class="border-0">Traffic</th>
+                        <th class="border-0">DR/DA</th>
+                        <th class="border-0">Language</th>
+                        <th class="border-0">Added</th>
+                        <th class="border-0">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in pagination.items %}
+                    <tr class="table-row">
+                        <td class="url-cell">
+                            <div class="d-flex align-items-center">
+                                <div class="url-icon bg-primary bg-opacity-10 rounded-circle me-2 flex-shrink-0">
+                                    <i class="bi bi-globe text-primary"></i>
+                                </div>
+                                <div class="min-width-0">
+                                    <a href="{{ item.url }}" target="_blank" class="text-primary text-decoration-none fw-medium text-truncate d-block">
+                                        {{ item.url[:60] }}{% if item.url|length > 60 %}...{% endif %}
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {% if item.source == 'adsy' %}bg-success{% else %}bg-info{% endif %} badge-lg">
+                                {{ item.source.title() }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="text-muted small">
+                                {{ (item.categories[:40] + '...') if item.categories and item.categories|length > 40 else (item.categories or 'N/A') }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="text-success fw-medium">
+                                {{ item.monthly_traffic or item.ahrefs_traffic or 'N/A' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="small">
+                                {% if item.ahrefs_dr %}
+                                    <div class="text-primary">DR: {{ item.ahrefs_dr }}</div>
+                                {% endif %}
+                                {% if item.moz_da %}
+                                    <div class="text-success">DA: {{ item.moz_da }}</div>
+                                {% endif %}
+                                {% if not item.ahrefs_dr and not item.moz_da %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="text-muted">{{ item.language or 'N/A' }}</span>
+                        </td>
+                        <td>
+                            <span class="text-muted small">{{ item.created_at.strftime('%m/%d/%Y') }}</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button onclick="viewDetails({{ item.id }})" class="btn btn-outline-primary btn-sm" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button onclick="deleteRecord({{ item.id }})" class="btn btn-outline-danger btn-sm" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <div class="empty-state">
+                                <i class="bi bi-inbox display-4 text-muted mb-3"></i>
+                                <h4 class="text-muted">No Records Found</h4>
+                                <p class="text-muted mb-4">Try adjusting your search criteria or add new data</p>
+                                <a href="{{ url_for('scraper_execute') }}" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle me-1"></i>Start Scraping
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    {% if pagination.pages > 1 %}
+    <div class="card-footer bg-light border-0">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+                Page {{ pagination.page }} of {{ pagination.pages }}
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    {% if pagination.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('scraper_data', page=pagination.prev_num, source=source_filter, search=search) }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in pagination.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != pagination.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('scraper_data', page=page_num, source=source_filter, search=search) }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if pagination.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('scraper_data', page=pagination.next_num, source=source_filter, search=search) }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="detailsModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle me-2"></i>Record Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsContent">
+                <div class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showNotification(message, type = 'info') {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : type === 'warning' ? 'alert-warning' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 15000);
+}
+
+function viewDetails(recordId) {
+    const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+    modal.show();
+    
+    fetch(`/scraper/api/record/${recordId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const record = data.record;
+            const sourceClass = record.source === 'adsy' ? 'success' : 'info';
+            document.getElementById('detailsContent').innerHTML = `
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="card modern-card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-info-circle text-primary me-2"></i>Basic Information
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-primary">URL</label>
+                                    <div class="border rounded p-2 bg-light">
+                                        <a href="${record.url}" target="_blank" class="text-primary text-decoration-none">
+                                            <i class="bi bi-box-arrow-up-right me-1"></i>${record.url}
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-primary">Source</label>
+                                    <div>
+                                        <span class="badge bg-${sourceClass} badge-lg">${record.source.charAt(0).toUpperCase() + record.source.slice(1)}</span>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-primary">Categories</label>
+                                    <div class="border rounded p-2 bg-light text-muted">${record.categories || 'N/A'}</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-primary">Language</label>
+                                    <div class="text-muted">${record.language || 'N/A'}</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-primary">Date Added</label>
+                                    <div class="text-muted">
+                                        <i class="bi bi-calendar-date me-1"></i>
+                                        ${new Date(record.created_at).toLocaleDateString()} 
+                                        <i class="bi bi-clock me-1 ms-2"></i>
+                                        ${new Date(record.created_at).toLocaleTimeString()}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card modern-card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-graph-up text-success me-2"></i>Traffic & Metrics
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-success">Traffic Data</label>
+                                    <div class="small">
+                                        ${record.monthly_traffic ? `<div class="d-flex justify-content-between border-bottom pb-1 mb-1"><span>Monthly:</span><span class="text-success fw-bold">${record.monthly_traffic}</span></div>` : ''}
+                                        ${record.ahrefs_traffic ? `<div class="d-flex justify-content-between border-bottom pb-1 mb-1"><span>Ahrefs:</span><span class="text-primary fw-bold">${record.ahrefs_traffic}</span></div>` : ''}
+                                        ${record.similarweb_traffic ? `<div class="d-flex justify-content-between border-bottom pb-1 mb-1"><span>SimilarWeb:</span><span class="text-info fw-bold">${record.similarweb_traffic}</span></div>` : ''}
+                                        ${record.semrush_traffic ? `<div class="d-flex justify-content-between border-bottom pb-1 mb-1"><span>SEMrush:</span><span class="text-warning fw-bold">${record.semrush_traffic}</span></div>` : ''}
+                                        ${!record.monthly_traffic && !record.ahrefs_traffic && !record.similarweb_traffic && !record.semrush_traffic ? '<div class="text-muted">N/A</div>' : ''}
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-warning">Domain Authority</label>
+                                    <div class="small">
+                                        ${record.ahrefs_dr ? `<div class="d-flex justify-content-between border-bottom pb-1 mb-1"><span>Ahrefs DR:</span><span class="text-primary fw-bold">${record.ahrefs_dr}</span></div>` : ''}
+                                        ${record.moz_da ? `<div class="d-flex justify-content-between border-bottom pb-1 mb-1"><span>Moz DA:</span><span class="text-success fw-bold">${record.moz_da}</span></div>` : ''}
+                                        ${record.semrush_as ? `<div class="d-flex justify-content-between border-bottom pb-1 mb-1"><span>SEMrush AS:</span><span class="text-info fw-bold">${record.semrush_as}</span></div>` : ''}
+                                        ${!record.ahrefs_dr && !record.moz_da && !record.semrush_as ? '<div class="text-muted">N/A</div>' : ''}
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold text-success">Pricing</label>
+                                    <div class="small">
+                                        ${record.content_placement_price ? `<div class="d-flex justify-content-between border-bottom pb-1 mb-1"><span>Content Placement:</span><span class="text-success fw-bold">${record.content_placement_price}</span></div>` : ''}
+                                        ${record.writing_placement_price ? `<div class="d-flex justify-content-between border-bottom pb-1 mb-1"><span>Writing & Placement:</span><span class="text-success fw-bold">${record.writing_placement_price}</span></div>` : ''}
+                                        ${!record.content_placement_price && !record.writing_placement_price ? '<div class="text-muted">N/A</div>' : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card modern-card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-gear text-secondary me-2"></i>Additional Information
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold text-info">Link Information</label>
+                                        <div class="small">
+                                            ${record.link_type ? `<div class="mb-1"><i class="bi bi-link-45deg me-1"></i>Type: ${record.link_type}</div>` : ''}
+                                            ${record.sponsored_required ? `<div class="mb-1"><i class="bi bi-shield-check me-1"></i>Sponsored: ${record.sponsored_required}</div>` : ''}
+                                            ${record.tat_days ? `<div class="mb-1"><i class="bi bi-clock me-1"></i>TAT: ${record.tat_days} days</div>` : ''}
+                                            ${!record.link_type && !record.sponsored_required && !record.tat_days ? '<div class="text-muted">N/A</div>' : ''}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold text-warning">Quality Metrics</label>
+                                        <div class="small">
+                                            ${record.completion_rate ? `<div class="mb-1"><i class="bi bi-percent me-1"></i>Completion: <span class="text-success fw-bold">${record.completion_rate}</span></div>` : ''}
+                                            ${record.link_lifetime ? `<div class="mb-1"><i class="bi bi-hourglass me-1"></i>Lifetime: ${record.link_lifetime}</div>` : ''}
+                                            ${record.spam_score ? `<div class="mb-1"><i class="bi bi-exclamation-triangle me-1"></i>Spam Score: <span class="text-danger fw-bold">${record.spam_score}</span></div>` : ''}
+                                            ${!record.completion_rate && !record.link_lifetime && !record.spam_score ? '<div class="text-muted">N/A</div>' : ''}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold text-secondary">Other</label>
+                                        <div class="small">
+                                            ${record.referral_domains ? `<div class="mb-1"><i class="bi bi-diagram-3 me-1"></i>Referrals: ${record.referral_domains}</div>` : ''}
+                                            ${record.content_size ? `<div class="mb-1"><i class="bi bi-file-text me-1"></i>Content Size: ${record.content_size}</div>` : ''}
+                                            ${!record.referral_domains && !record.content_size ? '<div class="text-muted">N/A</div>' : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                ${record.description ? `
+                                    <div class="mt-3 pt-3 border-top">
+                                        <label class="form-label fw-bold text-primary">Description</label>
+                                        <div class="border rounded p-3 bg-light text-muted">${record.description}</div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            document.getElementById('detailsContent').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Failed to load record details
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        document.getElementById('detailsContent').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-x-circle me-2"></i>Error loading details: ${error.message}
+            </div>
+        `;
+    });
+}
+
+function deleteRecord(recordId) {
+    if (confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
+        fetch('/scraper/delete-record', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id: recordId})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error deleting record: ' + error.message, 'error');
+        });
+    }
+}
+
+function bulkImport() {
+    const fileType = document.getElementById('importFileType').value;
+    const target = document.getElementById('importTarget').value;
+    const fileData = document.getElementById('importData').value.trim();
+    
+    if (!fileData) {
+        showNotification('Please paste data to import', 'error');
+        return;
+    }
+    
+    fetch('/bulk-import', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            file_type: fileType,
+            target: target,
+            file_data: fileData
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            document.getElementById('importData').value = '';
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Import failed: ' + error.message, 'error');
+    });
+}
+
+function exportData() {
+    const source = document.getElementById('exportSource').value;
+    const url = `{{ url_for('export_scraper_data') }}${source ? '?source=' + source : ''}`;
+    window.open(url, '_blank');
+    showNotification('Export started', 'success');
+}
+
+function exportSuppression() {
+    window.open('{{ url_for("export_suppression") }}', '_blank');
+    showNotification('Suppression export started', 'success');
+}
+
+function bulkRemove(target) {
+    const urls = document.getElementById('bulkRemoveUrls').value.trim();
+    if (!urls) {
+        showNotification('Please enter URLs to remove', 'error');
+        return;
+    }
+    
+    const urlList = urls.split('\n').map(url => url.trim()).filter(url => url);
+    
+    if (confirm(`Are you sure you want to remove ${urlList.length} URLs from ${target}?`)) {
+        fetch('/scraper/bulk-remove', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                target: target,
+                urls: urlList
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                document.getElementById('bulkRemoveUrls').value = '';
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Bulk remove failed: ' + error.message, 'error');
+        });
+    }
+}
+
+function confirmClearData() {
+    if (confirm('Are you sure you want to clear ALL data records? This action cannot be undone.')) {
+        fetch('/scraper/clear-data', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Clear data failed: ' + error.message, 'error');
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.table-row').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-1px)';
+            this.style.boxShadow = 'var(--shadow-sm)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+});
+</script>
+
+<style>
+.gradient-card-green {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-blue {
+    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-purple {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-orange {
+    background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border: none;
+}
+
+.url-icon {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.modern-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.modern-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.font-monospace {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.data-table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--bs-gray-700);
+    padding: 1rem 0.75rem;
+}
+
+.table-row {
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.table-row:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    border-left-color: var(--bs-primary);
+}
+
+.url-cell {
+    max-width: 300px;
+}
+
+.badge-lg {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+.btn {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(248, 249, 250, 0.8);
+}
+
+.modal-content {
+    border: none;
+    box-shadow: var(--shadow-lg);
+    border-radius: 12px;
+}
+
+.pagination {
+    --bs-pagination-border-radius: 8px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #e3e6f0;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+}
+
+@media (max-width: 768px) {
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .url-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+    
+    .modern-card:hover {
+        transform: none;
+    }
+    
+    .table-row:hover {
+        transform: none;
+    }
+    
+    .btn:hover {
+        transform: none;
+    }
+    
+    .modal-dialog {
+        margin: 10px;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    h3 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .row.g-4 {
+        --bs-gutter-x: 0.75rem;
+        --bs-gutter-y: 0.75rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+    
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .badge-lg {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.7rem;
+    }
+}
+</style>
+{% endblock %}

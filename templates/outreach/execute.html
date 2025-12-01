@@ -1,0 +1,620 @@
+{% extends 'base.html' %}
+
+{% block title %}Outreach Execute Operations{% endblock %}
+{% block page_title %}Outreach Execute Operations{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-4">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-gear-wide-connected text-primary me-2"></i>
+                    <h5 class="mb-0">Execution Configuration</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Execution Mode</label>
+                    <select class="form-select" id="executionMode">
+                        <option value="automatic">Automatic (Use Saved Config)</option>
+                        <option value="dynamic">Dynamic (Custom Config)</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-medium">Run Type</label>
+                    <select class="form-select" id="runMode">
+                        <option value="continuous">Continuous</option>
+                        <option value="limited">Limited</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3" id="targetCountDiv" style="display:none;">
+                    <label class="form-label fw-medium">Target Count</label>
+                    <input type="number" class="form-control" id="targetCount" min="1" value="10">
+                </div>
+                
+                <div class="mb-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="extractEmails">
+                        <label class="form-check-label fw-medium" for="extractEmails">
+                            Extract Emails During Outreach
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary btn-lg" id="startBtn" onclick="startExecution()">
+                        <i class="bi bi-play-circle me-2"></i>Start Outreach
+                    </button>
+                    <button class="btn btn-danger" onclick="stopExecution()" id="stopBtn" style="display:none;">
+                        <i class="bi bi-stop-circle me-2"></i>Stop Outreach
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card modern-card mt-3">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-activity text-success me-2"></i>
+                    <h6 class="mb-0">Bot Status</h6>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3" id="botStatus">
+                    <div class="spinner-border text-primary" role="status" style="display:none;" id="statusSpinner"></div>
+                    <div class="fw-medium" id="statusText">Idle</div>
+                    <div class="mt-2">
+                        <small class="text-muted" id="currentUrl"></small>
+                    </div>
+                </div>
+                
+                <div class="row text-center g-2">
+                    <div class="col-3">
+                        <div class="stat-card bg-info bg-opacity-10 rounded p-2">
+                            <div class="fw-bold text-info" id="processedCount">0</div>
+                            <small class="text-muted">Processed</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="stat-card bg-warning bg-opacity-10 rounded p-2">
+                            <div class="fw-bold text-warning" id="formsFound">0</div>
+                            <small class="text-muted">Forms Found</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="stat-card bg-success bg-opacity-10 rounded p-2">
+                            <div class="fw-bold text-success" id="submitted">0</div>
+                            <small class="text-muted">Submitted</small>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="stat-card bg-primary bg-opacity-10 rounded p-2">
+                            <div class="fw-bold text-primary" id="emailsExtracted">0</div>
+                            <small class="text-muted">Emails</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-bullseye text-primary me-2"></i>
+                        <h5 class="mb-0">Target URLs</h5>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-primary" id="selectAllUrls">
+                            <i class="bi bi-check-all me-1"></i>All
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="clearAllUrls">
+                            <i class="bi bi-x-square me-1"></i>Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="urlSearch" placeholder="Search URLs...">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center h-100">
+                            <small class="text-muted">
+                                <span id="selectedCount">0</span> of 
+                                <span id="totalCount">{{ outreach_records|length }}</span> selected
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if outreach_records %}
+                    <div class="url-list-container border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+                        <div class="row g-2" id="urlList">
+                            {% for record in outreach_records %}
+                            <div class="col-md-6">
+                                <div class="form-check p-3 border rounded url-item" data-url="{{ record.url|lower }}" style="transition: all 0.2s ease;">
+                                    <input class="form-check-input url-checkbox" type="checkbox" id="url_{{ record.id }}" name="selected_urls" value="{{ record.id }}">
+                                    <label class="form-check-label w-100 cursor-pointer" for="url_{{ record.id }}">
+                                        <div class="d-flex align-items-center">
+                                            <div class="url-icon bg-primary bg-opacity-10 rounded-circle me-3 flex-shrink-0 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="bi bi-link-45deg text-primary"></i>
+                                            </div>
+                                            <div class="flex-grow-1 min-width-0">
+                                                <h6 class="mb-1 text-truncate">{{ record.url[:60] }}{% if record.url|length > 60 %}...{% endif %}</h6>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <small class="text-muted">ID: {{ record.id }}</small>
+                                                    <span class="badge bg-{{ 'success' if record.status == 'success' else 'danger' if record.status == 'error' else 'warning' }}">{{ record.status }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5 empty-state">
+                        <i class="bi bi-database text-muted" style="font-size: 4rem;"></i>
+                        <h4 class="mt-3 text-muted">No URLs Available</h4>
+                        <p class="text-muted mb-4">Add URLs to your database first</p>
+                        <button class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>Add URLs
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="configModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-gear-wide-connected me-2"></i>Custom Configuration
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">First Name</label>
+                            <input type="text" class="form-control" id="firstName" value="{{ config.first_name }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" value="{{ config.last_name }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Email</label>
+                            <input type="email" class="form-control" id="email" value="{{ config.email }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Phone</label>
+                            <input type="text" class="form-control" id="phone">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Company</label>
+                            <input type="text" class="form-control" id="company">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Subject</label>
+                            <input type="text" class="form-control" id="subject" value="Business Inquiry">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Message</label>
+                            <textarea class="form-control" id="message" rows="8">{{ config.message }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium">Delay (seconds)</label>
+                            <input type="number" class="form-control" id="delay" value="{{ config.delay_between_requests }}" min="1">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <label class="form-label fw-medium mb-0">Custom Fields</label>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addCustomField()">
+                            <i class="bi bi-plus-circle me-1"></i>Add Field
+                        </button>
+                    </div>
+                    <div id="customFields"></div>
+                </div>
+                
+                <div class="mb-3">
+                    <button type="button" class="btn btn-outline-secondary" onclick="importSavedConfig()">
+                        <i class="bi bi-download me-1"></i>Import Saved Config
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="confirmDynamicExecution()">
+                    <i class="bi bi-play-circle me-1"></i>Start with This Config
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let customFieldCount = 0;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const executionMode = document.getElementById('executionMode');
+    const runMode = document.getElementById('runMode');
+    const targetCountDiv = document.getElementById('targetCountDiv');
+    const selectAllUrls = document.getElementById('selectAllUrls');
+    const clearAllUrls = document.getElementById('clearAllUrls');
+    const urlSearch = document.getElementById('urlSearch');
+
+    executionMode.addEventListener('change', function() {
+        if (this.value === 'dynamic') {
+            const modal = new bootstrap.Modal(document.getElementById('configModal'));
+            modal.show();
+        }
+    });
+
+    runMode.addEventListener('change', function() {
+        targetCountDiv.style.display = this.value === 'limited' ? 'block' : 'none';
+    });
+
+    selectAllUrls.addEventListener('click', function() {
+        document.querySelectorAll('input[name="selected_urls"]').forEach(cb => cb.checked = true);
+        updateSelectedCount();
+    });
+
+    clearAllUrls.addEventListener('click', function() {
+        document.querySelectorAll('input[name="selected_urls"]').forEach(cb => cb.checked = false);
+        updateSelectedCount();
+    });
+
+    urlSearch.addEventListener('input', function() {
+        const search = this.value.toLowerCase();
+        document.querySelectorAll('.url-item').forEach(item => {
+            const url = item.dataset.url;
+            item.style.display = url.includes(search) ? 'block' : 'none';
+        });
+    });
+
+    document.querySelectorAll('.url-checkbox').forEach(cb => {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+
+    document.querySelectorAll('.url-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-1px)';
+            this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+            this.style.borderColor = 'var(--bs-primary)';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+            this.style.borderColor = '';
+        });
+    });
+
+    function updateSelectedCount() {
+        const selectedCount = document.querySelectorAll('input[name="selected_urls"]:checked').length;
+        document.getElementById('selectedCount').textContent = selectedCount;
+    }
+
+    updateSelectedCount();
+});
+
+function addCustomField() {
+    const container = document.getElementById('customFields');
+    const fieldDiv = document.createElement('div');
+    fieldDiv.className = 'row g-2 mb-2';
+    fieldDiv.innerHTML = `
+        <div class="col-5">
+            <input type="text" class="form-control form-control-sm" placeholder="Field name">
+        </div>
+        <div class="col-5">
+            <input type="text" class="form-control form-control-sm" placeholder="Field value">
+        </div>
+        <div class="col-2">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="this.parentElement.parentElement.remove()">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    `;
+    container.appendChild(fieldDiv);
+}
+
+function importSavedConfig() {
+    fetch('/outreach/api/config')
+    .then(response => response.json())
+    .then(config => {
+        document.getElementById('firstName').value = config.first_name || '';
+        document.getElementById('lastName').value = config.last_name || '';
+        document.getElementById('email').value = config.email || '';
+        document.getElementById('message').value = config.message || '';
+        document.getElementById('delay').value = config.delay_between_requests || 3;
+        
+        if (config.custom_fields) {
+            document.getElementById('customFields').innerHTML = '';
+            config.custom_fields.forEach(field => {
+                addCustomField();
+                const lastField = document.getElementById('customFields').lastElementChild;
+                lastField.querySelector('input:first-child').value = field.field_name || '';
+                lastField.querySelector('input:nth-child(2)').value = field.field_value || '';
+            });
+        }
+        showToast('Configuration imported successfully', 'success');
+    })
+    .catch(error => {
+        showToast('Failed to import configuration', 'error');
+    });
+}
+
+function startExecution() {
+    const mode = document.getElementById('executionMode').value;
+    
+    if (mode === 'dynamic') {
+        const modal = new bootstrap.Modal(document.getElementById('configModal'));
+        modal.show();
+        return;
+    }
+    
+    executeOutreach();
+}
+
+function confirmDynamicExecution() {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('configModal'));
+    modal.hide();
+    executeOutreach();
+}
+
+function executeOutreach() {
+    const selectedUrls = Array.from(document.querySelectorAll('input[name="selected_urls"]:checked')).map(cb => cb.value);
+    const executionMode = document.getElementById('executionMode').value;
+    
+    if (selectedUrls.length === 0) {
+        showToast('Please select at least one URL', 'warning');
+        return;
+    }
+    
+    let customConfig = null;
+    if (executionMode === 'dynamic') {
+        const customFields = [];
+        document.querySelectorAll('#customFields .row').forEach(row => {
+            const name = row.querySelector('input:first-child').value;
+            const value = row.querySelector('input:nth-child(2)').value;
+            if (name && value) {
+                customFields.push({ field_name: name, field_value: value });
+            }
+        });
+        
+        customConfig = {
+            first_name: document.getElementById('firstName').value,
+            last_name: document.getElementById('lastName').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            company: document.getElementById('company').value,
+            subject: document.getElementById('subject').value,
+            message: document.getElementById('message').value,
+            delay_between_requests: parseInt(document.getElementById('delay').value),
+            custom_fields: customFields
+        };
+    }
+    
+    const data = {
+        execution_mode: executionMode,
+        selected_urls: selectedUrls,
+        run_mode: document.getElementById('runMode').value,
+        target_count: parseInt(document.getElementById('targetCount').value) || 0,
+        custom_config: customConfig,
+        extract_emails: document.getElementById('extractEmails').checked
+    };
+    
+    fetch('/outreach/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('stopBtn').style.display = 'block';
+            document.getElementById('startBtn').style.display = 'none';
+            startStatusUpdates();
+            showToast('Outreach started successfully', 'success');
+        } else {
+            showToast('Failed to start outreach: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+showToast('Network error: ' + error.message, 'error');
+    });
+}
+
+function stopExecution() {
+    fetch('/outreach/stop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('stopBtn').style.display = 'none';
+        document.getElementById('startBtn').style.display = 'block';
+        clearInterval(window.statusInterval);
+        showToast('Outreach stopped', 'info');
+    })
+    .catch(error => {
+        showToast('Failed to stop outreach', 'error');
+    });
+}
+
+function startStatusUpdates() {
+    window.statusInterval = setInterval(updateStatus, 2000);
+    updateStatus();
+}
+
+function updateStatus() {
+    fetch('/outreach/api/stats')
+    .then(response => response.json())
+    .then(stats => {
+        document.getElementById('statusText').textContent = stats.status;
+        document.getElementById('currentUrl').textContent = stats.current_url || '';
+        document.getElementById('processedCount').textContent = stats.urls_processed || 0;
+        document.getElementById('formsFound').textContent = stats.forms_found || 0;
+        document.getElementById('submitted').textContent = stats.forms_submitted || 0;
+        document.getElementById('emailsExtracted').textContent = stats.emails_extracted || 0;
+        
+        const spinner = document.getElementById('statusSpinner');
+        if (stats.status === 'Running') {
+            spinner.style.display = 'inline-block';
+        } else {
+            spinner.style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'none';
+            document.getElementById('startBtn').style.display = 'block';
+            if (window.statusInterval) {
+                clearInterval(window.statusInterval);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Status update failed:', error);
+    });
+}
+
+function showToast(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : type === 'warning' ? 'alert-warning' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 15000);
+}
+</script>
+
+<style>
+.modern-card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    transition: all 0.2s ease;
+}
+
+.modern-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+}
+
+.url-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--bs-border-color) !important;
+}
+
+.url-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-color: var(--bs-primary) !important;
+}
+
+.stat-card {
+    transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-1px);
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.url-list-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.url-list-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.url-list-container::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.url-list-container::-webkit-scrollbar-thumb:hover {
+    background: #aaa;
+}
+
+@media (max-width: 768px) {
+    .url-list-container {
+        max-height: 300px !important;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        border-radius: 0.375rem !important;
+        margin-bottom: 0.25rem;
+    }
+    
+    .modal-dialog {
+        margin: 10px;
+    }
+}
+</style>
+{% endblock %}

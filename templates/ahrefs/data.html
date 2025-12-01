@@ -1,0 +1,2126 @@
+{% extends "base.html" %}
+
+{% block title %}Ahrefs Data{% endblock %}
+{% block page_title %}Ahrefs Data{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-blue h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-database text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ data.total or 0 }}</h3>
+                        <p class="text-white-50 mb-0">Total Records</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card modern-card gradient-card-green h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-white bg-opacity-90 rounded-circle me-3 flex-shrink-0">
+                        <i class="bi bi-graph-up text-success"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-white mb-1 fw-bold">{{ data.items|length }}</h3>
+                        <p class="text-white-50 mb-0">Showing</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-search text-primary me-2"></i>
+                    <h5 class="mb-0">Search & Export</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-7">
+                        <form method="GET" class="d-flex">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control" name="search" placeholder="Search URLs..." value="{{ search }}" autocomplete="off">
+                            </div>
+                            <button type="submit" class="btn btn-primary ms-2">Search</button>
+                            {% if search %}
+                                <a href="{{ url_for('ahrefs_data') }}" class="btn btn-outline-secondary ms-1" title="Clear search">
+                                    <i class="bi bi-x"></i>
+                                </a>
+                            {% endif %}
+                        </form>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('export_ahrefs_data') }}" class="btn btn-outline-success">
+                                <i class="bi bi-download me-1"></i>Export
+                            </a>
+                            <a href="{{ url_for('ahrefs_execute') }}" class="btn btn-primary">
+                                <i class="bi bi-play-circle me-1"></i>Execute
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                <div class="col-lg-12 mb-3">
+                <div class="card modern-card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-toggles text-primary me-2"></i>
+                                <h5 class="mb-0">WWW Display Options</h5>
+                            </div>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <input type="radio" class="btn-check" name="wwwToggle" id="showBoth" value="both" checked>
+                                <label class="btn btn-outline-primary" for="showBoth">
+                                    <i class="bi bi-layers me-1"></i>Both
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="wwwToggle" id="showWww" value="www">
+                                <label class="btn btn-outline-primary" for="showWww">
+                                    <i class="bi bi-globe-central-south-asia me-1"></i>WWW
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="wwwToggle" id="showNoWww" value="no_www">
+                                <label class="btn btn-outline-primary" for="showNoWww">
+                                    <i class="bi bi-globe-americas me-1"></i>No WWW
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+</div>
+
+<div class="col-lg-12">
+    <div class="card modern-card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-funnel text-primary me-2"></i>
+                    <h5 class="mb-0">Advanced Filters</h5>
+                </div>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary" id="addFilterBtn">
+                        <i class="bi bi-plus-circle me-1"></i>Add Filter
+                    </button>
+                    <button class="btn btn-outline-secondary" id="clearFiltersBtn">
+                        <i class="bi bi-x-circle me-1"></i>Clear All
+                    </button>
+                    <button class="btn btn-outline-success" id="applyFiltersBtn">
+                        <i class="bi bi-check-circle me-1"></i>Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="filtersContainer" class="mb-3">
+                <div class="text-muted text-center py-3" id="noFiltersMessage">
+                    <i class="bi bi-funnel"></i> No filters applied. Click "Add Filter" to start filtering data.
+                </div>
+            </div>
+            <div class="alert alert-info alert-dismissible fade show mb-0" id="filterStatus" style="display: none;">
+                <i class="bi bi-info-circle me-2"></i>
+                <span id="filterStatusText"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card modern-card">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi bi-table text-primary me-2"></i>
+                <h5 class="mb-0">Analytics Data</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAllData">
+                    <label class="form-check-label" for="selectAllData">
+                        Select All
+                    </label>
+                </div>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <span class="badge bg-primary" id="selectedCountData">0 selected</span>
+                <button class="btn btn-sm btn-outline-warning" id="bulkArchiveBtn" disabled>
+                    <i class="bi bi-archive me-1"></i>Archive Selected
+                </button>
+                <button class="btn btn-sm btn-outline-danger" id="bulkDeleteDataBtn" disabled>
+                    <i class="bi bi-trash me-1"></i>Delete Selected
+                </button>
+                <a href="#" onclick="syncToSheets()" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-cloud-upload me-1"></i>Sync to Sheets
+                </a>
+                <div class="text-muted small">
+                    Showing {{ data.items|length }} of {{ data.total }} records
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if data.items %}
+        <div class="card-body p-0">
+            <div class="table-responsive">
+            <table class="table table-hover data-table mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="border-0" width="40">
+                            <input type="checkbox" class="form-check-input" id="selectAllDataHeader">
+                        </th>
+                        <th class="border-0">URL</th>
+                        <th class="border-0">Metrics</th>
+                        <th class="border-0">Keywords</th>
+                        <th class="border-0">Countries</th>
+                        <th class="border-0">Domain Rating</th>
+                        <th class="border-0">Backlinks</th>
+                        <th class="border-0">Historical</th>
+                        <th class="border-0">Updated</th>
+                        <th class="border-0" width="120">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in data.items %}
+                    <tr class="table-row">
+                        <td>
+                            <input type="checkbox" class="form-check-input row-checkbox-data" data-id="{{ item.id }}">
+                        </td>
+                        <td class="url-cell">
+                            <div class="d-flex align-items-center">
+                                <div class="url-icon bg-primary bg-opacity-10 rounded-circle me-3 flex-shrink-0">
+                                    <i class="bi bi-link-45deg text-primary"></i>
+                                </div>
+                                <div class="min-width-0">
+                                    <h6 class="mb-1 text-truncate fw-medium">{{ item.url.url }}</h6>
+                                    <small class="text-muted">ID: {{ item.id }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        
+                        <td class="metrics-cell">
+                            {% set current_metrics = item.get_current_metrics() %}
+                            {% if current_metrics and current_metrics.get('metrics') %}
+                                {% set metrics = current_metrics.metrics %}
+                                <div class="metrics-compact">
+                                    <div class="metric-row">
+                                        <span class="metric-label">Keywords</span>
+                                        <span class="metric-value text-success">{{ "{:,}".format(metrics.org_keywords) if metrics.org_keywords else 'N/A' }}</span>
+                                    </div>
+                                    <div class="metric-row">
+                                        <span class="metric-label">Traffic</span>
+                                        <span class="metric-value text-primary">{{ "{:,}".format(metrics.org_traffic) if metrics.org_traffic else 'N/A' }}</span>
+                                    </div>
+                                    <div class="metric-row">
+                                        <span class="metric-label">Value</span>
+                                        <span class="metric-value text-info">${{ "{:,}".format(metrics.org_cost) if metrics.org_cost else 'N/A' }}</span>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="data-status no-data">
+                                    <i class="bi bi-dash-circle"></i>
+                                    <span>No data</span>
+                                </div>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="keywords-cell">
+                            {% set top_keywords = item.get_top_keywords() %}
+                            {% if top_keywords and top_keywords.get('keywords') %}
+                                <div class="keywords-preview scrollable-content">
+                                    {% for keyword in top_keywords.keywords %}
+                                        <div class="keyword-item">
+                                            <span class="keyword-text">{{ keyword.keyword }}</span>
+                                            <span class="keyword-traffic">{{ "{:,}".format(keyword.sum_traffic) if keyword.sum_traffic else 'N/A' }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="data-status no-data">
+                                    <i class="bi bi-dash-circle"></i>
+                                    <span>No data</span>
+                                </div>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="countries-cell">
+                            {% set country_summary = item.get_country_summary() %}
+                            {% if country_summary %}
+                                <div class="countries-preview scrollable-content">
+                                    {% for country in country_summary.countries %}
+                                        <div class="country-item">
+                                            <span class="country-code">{{ country.country }}</span>
+                                            <span class="country-percentage">{{ country.percentage }}%</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="data-status no-data">
+                                    <i class="bi bi-dash-circle"></i>
+                                    <span>No data</span>
+                                </div>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="rating-cell">
+                            {% set domain_rating = item.get_domain_rating() %}
+                            {% if domain_rating and domain_rating.get('domain_rating') %}
+                                <div class="rating-display">
+                                    <div class="dr-badge">DR {{ domain_rating.domain_rating.domain_rating }}</div>
+                                    {% if domain_rating.domain_rating.ahrefs_rank %}
+                                        <small class="rating-rank">{{ "{:,}".format(domain_rating.domain_rating.ahrefs_rank) }}</small>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="data-status no-data">
+                                    <i class="bi bi-dash-circle"></i>
+                                    <span>No data</span>
+                                </div>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="backlinks-cell">
+                            {% set backlinks = item.get_backlinks_stats() %}
+                            {% if backlinks and backlinks.get('metrics') %}
+                                {% set stats = backlinks.metrics %}
+                                <div class="backlinks-compact">
+                                    <div class="metric-row">
+                                        <span class="metric-label">Live</span>
+                                        <span class="metric-value text-success">{{ "{:,}".format(stats.live) if stats.live else 'N/A' }}</span>
+                                    </div>
+                                    <div class="metric-row">
+                                        <span class="metric-label">Domains</span>
+                                        <span class="metric-value text-info">{{ "{:,}".format(stats.live_refdomains) if stats.live_refdomains else 'N/A' }}</span>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="data-status no-data">
+                                    <i class="bi bi-dash-circle"></i>
+                                    <span>No data</span>
+                                </div>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="historical-cell">
+                            {% set historical_summary = item.get_historical_summary() %}
+                            {% if historical_summary %}
+                                {% set historical = item.get_historical_metrics() %}
+                                {% set yearly_data = {} %}
+                                {% if historical %}
+                                    {% for range_key, range_data in historical.items() %}
+                                        {% if range_data and range_data.get('metrics') and range_data.metrics is iterable %}
+                                            {% for month_data in range_data.metrics %}
+                                                {% if month_data and month_data.get('date') %}
+                                                    {% set year = month_data.date[:4] %}
+                                                    {% if yearly_data.update({year: {'traffic': yearly_data.get(year, {}).get('traffic', 0) + (month_data.get('org_traffic', 0) or 0), 'cost': yearly_data.get(year, {}).get('cost', 0) + (month_data.get('org_cost', 0) or 0)}}) or True %}{% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                                <div class="historical-compact scrollable-content">
+                                    {% if yearly_data %}
+                                        {% for year in yearly_data.keys() | sort | reverse %}
+                                            {% set avg_monthly = yearly_data[year].traffic / 12 %}
+                                            <div class="year-compact">
+                                                <span class="year-label">{{ year }}</span>
+                                                <span class="avg-monthly text-primary">
+                                                    {% if avg_monthly >= 1000000 %}
+                                                        {{ "%.1f"|format(avg_monthly / 1000000) }}M
+                                                    {% elif avg_monthly >= 1000 %}
+                                                        {{ "%.1f"|format(avg_monthly / 1000) }}K
+                                                    {% else %}
+                                                        {{ "{:,}".format(avg_monthly|int) }}
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="data-status no-data">
+                                    <i class="bi bi-dash-circle"></i>
+                                    <span>No data</span>
+                                </div>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="date-cell">
+                            <div class="date-info">
+                                <div class="date-main">{{ item.fetched_at.strftime('%b %d, %Y') }}</div>
+                                <small class="time-sub">{{ item.fetched_at.strftime('%H:%M') }}</small>
+                            </div>
+                        </td>
+                        
+                        <td class="actions-cell">
+                            <div class="d-flex gap-1">
+                                <button type="button" class="btn btn-sm btn-outline-info" onclick="viewFullData({{ item.id }})" title="View data">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-success" onclick="copyUrl('{{ item.url.url }}')" title="Copy URL">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="importToOutreach({{ item.id }})" title="Import to outreach">
+                                    <i class="bi bi-send"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-warning archive-data-btn" 
+                                        data-id="{{ item.id }}" title="Archive">
+                                    <i class="bi bi-archive"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-data-btn" 
+                                        data-id="{{ item.id }}" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+        
+        {% if data.pages > 1 %}
+        <div class="card-footer bg-light border-0">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    Page {{ data.page }} of {{ data.pages }}
+                </div>
+                <nav aria-label="Data pagination">
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if data.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('ahrefs_data', page=data.prev_num, search=search) }}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for page_num in data.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                            {% if page_num %}
+                                {% if page_num != data.page %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('ahrefs_data', page=page_num, search=search) }}">{{ page_num }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ page_num }}</span>
+                                    </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">…</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if data.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('ahrefs_data', page=data.next_num, search=search) }}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state text-center py-5">
+            <i class="bi bi-database text-muted display-1"></i>
+            <h4 class="mt-4">No Data Found</h4>
+            {% if search %}
+                <p class="text-muted mb-3">No results found for "{{ search }}"</p>
+                <a href="{{ url_for('ahrefs_data') }}" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-arrow-left me-1"></i>View All Data
+                </a>
+            {% else %}
+                <p class="text-muted mb-3">Execute some operations to see data here</p>
+            {% endif %}
+            <a href="{{ url_for('ahrefs_execute') }}" class="btn btn-primary">
+                <i class="bi bi-play-circle me-1"></i>Execute Operations
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<div class="modal fade" id="fullDataModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-file-earmark-code me-2"></i>Complete Data View
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="fullDataContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="copyFullDataToClipboard()">
+                    <i class="bi bi-clipboard me-1"></i>Copy All Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.gradient-card-green {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-blue {
+    background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-purple {
+    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.gradient-card-orange {
+    background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.url-icon {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.modern-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+.modern-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.data-table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: var(--bs-gray-700);
+    padding: 1rem 0.75rem;
+}
+
+.table-row {
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.table-row:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+    border-left-color: var(--bs-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.url-cell {
+    max-width: 300px;
+}
+
+.metrics-grid, .backlinks-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.metric-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.metric-label {
+    font-size: 0.65rem;
+    color: var(--bs-gray-600);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.rating-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.dr-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: 15px;
+    font-weight: 800;
+    font-size: 0.8rem;
+    min-width: 55px;
+}
+
+.rating-rank {
+    font-size: 0.7rem;
+    color: var(--bs-gray-600);
+}
+
+.historical-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.summary-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.25rem 0.375rem;
+    background: rgba(13, 110, 253, 0.05);
+    border-radius: 6px;
+}
+
+.stat-label {
+    font-size: 0.65rem;
+    color: var(--bs-gray-600);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.stat-value {
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.ranges-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    color: var(--bs-gray-600);
+    padding-top: 0.25rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.date-info {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.date-main {
+    font-weight: 600;
+    color: var(--bs-dark);
+    font-size: 0.8rem;
+}
+
+.time-sub {
+    font-size: 0.7rem;
+    color: var(--bs-gray-600);
+}
+
+.data-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    color: var(--bs-gray-500);
+    font-size: 0.75rem;
+    padding: 0.5rem 0;
+}
+
+.data-status.error {
+    color: var(--bs-warning);
+}
+
+.actions-cell {
+    text-align: center;
+}
+
+.btn {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(248, 249, 250, 0.8);
+}
+
+.modal-content {
+    border: none;
+    box-shadow: var(--shadow-lg);
+    border-radius: 12px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #e3e6f0;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+}
+
+.empty-state {
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .modern-card:hover {
+        transform: none;
+    }
+    
+    .table-row:hover {
+        transform: none;
+    }
+    
+    .btn:hover {
+        transform: none;
+    }
+    
+    .metrics-grid, .backlinks-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.yearly-scroll {
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 0.25rem;
+}
+
+.year-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-bottom: 1px solid #f8f9fa;
+    font-size: 0.75rem;
+}
+
+.year-stat:last-child {
+    border-bottom: none;
+}
+
+.year-label {
+    font-weight: 600;
+    color: var(--bs-gray-700);
+}
+
+.yearly-data-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.yearly-data-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.yearly-data-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.yearly-data-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.metrics-compact, .backlinks-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+}
+
+.metric-label {
+    color: var(--bs-gray-600);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.metric-value {
+    font-weight: 700;
+}
+
+.keywords-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-width: 180px;
+}
+
+.keyword-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+}
+
+.keyword-text {
+    color: var(--bs-gray-700);
+    font-weight: 500;
+    flex: 1;
+    margin-right: 0.5rem;
+}
+
+.keyword-traffic {
+    color: var(--bs-primary);
+    font-weight: 700;
+    font-size: 0.7rem;
+}
+
+.countries-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-width: 120px;
+}
+
+.country-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+}
+
+.country-code {
+    color: var(--bs-gray-700);
+    font-weight: 600;
+    font-family: monospace;
+}
+
+.country-percentage {
+    color: var(--bs-success);
+    font-weight: 700;
+}
+
+.historical-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.year-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    padding: 0.125rem 0.25rem;
+    background: rgba(13, 110, 253, 0.05);
+    border-radius: 3px;
+}
+
+.year-label {
+    font-weight: 600;
+    color: var(--bs-gray-700);
+}
+
+.avg-monthly {
+    font-weight: 700;
+    font-size: 0.7rem;
+}
+
+.scrollable-content {
+    max-height: 80px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+    padding-right: 8px;
+    margin-right: -4px;
+}
+
+.scrollable-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollable-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+    margin-right: 4px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.scrollable-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.scrollable-content * {
+    scroll-behavior: smooth;
+}
+
+.scrollable-content:hover {
+    scrollbar-color: #a8a8a8 #f1f1f1;
+}
+
+.keywords-preview.scrollable-content {
+    max-width: 180px;
+}
+
+.countries-preview.scrollable-content {
+    max-width: 120px;
+}
+
+.historical-compact.scrollable-content {
+    max-width: 140px;
+}
+
+.filter-item {
+    transition: all 0.2s ease;
+}
+
+.filter-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: var(--bs-primary) !important;
+}
+
+.form-select-sm, .form-control-sm {
+    font-size: 0.875rem;
+}
+
+#filterStatus {
+    border-left: 4px solid #0dcaf0;
+}
+</style>
+
+<script>
+let currentFullData = null;
+
+function showNotification(message, type = 'info') {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : type === 'warning' ? 'alert-warning' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 15000);
+}
+
+function viewFullData(dataId) {
+    const modal = new bootstrap.Modal(document.getElementById('fullDataModal'));
+    const dataContent = document.getElementById('fullDataContent');
+    
+    dataContent.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    `;
+    
+    modal.show();
+    
+    fetch(`/ahrefs/view_data/${dataId}`)
+        .then(response => response.json())
+        .then(data => {
+            currentFullData = data;
+            displayFullData(data);
+        })
+        .catch(error => {
+            dataContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Error loading data: ${error.message}
+                </div>
+            `;
+        });
+}
+
+function displayFullData(data) {
+    const dataContent = document.getElementById('fullDataContent');
+    
+    let html = `
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h6 class="text-muted mb-1">URL</h6>
+                <p class="mb-0 fw-medium">${data.url}</p>
+            </div>
+            <div class="col-md-4">
+                <h6 class="text-muted mb-1">Last Updated</h6>
+                <p class="mb-0">${new Date(data.fetched_at).toLocaleString()}</p>
+            </div>
+        </div>
+        
+        <ul class="nav nav-pills mb-3" id="nav-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="nav-current-tab" data-bs-toggle="tab" data-bs-target="#nav-current" type="button">
+                    Current Metrics
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="nav-domain-tab" data-bs-toggle="tab" data-bs-target="#nav-domain" type="button">
+                    Domain Rating
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="nav-backlinks-tab" data-bs-toggle="tab" data-bs-target="#nav-backlinks" type="button">
+                    Backlinks
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="nav-keywords-tab" data-bs-toggle="tab" data-bs-target="#nav-keywords" type="button">
+                    Top Keywords
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="nav-countries-tab" data-bs-toggle="tab" data-bs-target="#nav-countries" type="button">
+                    Country Metrics
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="nav-historical-tab" data-bs-toggle="tab" data-bs-target="#nav-historical" type="button">
+                    Historical
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="nav-raw-tab" data-bs-toggle="tab" data-bs-target="#nav-raw" type="button">
+                    Raw JSON
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-current">
+                ${formatDataSection('Current Metrics', data.data.current_metrics)}
+            </div>
+            <div class="tab-pane fade" id="nav-domain">
+                ${formatDataSection('Domain Rating', data.data.domain_rating)}
+            </div>
+            <div class="tab-pane fade" id="nav-backlinks">
+                ${formatDataSection('Backlinks Stats', data.data.backlinks_stats)}
+            </div>
+            <div class="tab-pane fade" id="nav-keywords">
+                ${formatKeywordsSection(data.data.top_keywords)}
+            </div>
+            <div class="tab-pane fade" id="nav-countries">
+                ${formatCountriesSection(data.data.country_metrics)}
+            </div>
+            <div class="tab-pane fade" id="nav-historical">
+                ${formatHistoricalDataSection(data.data.historical_metrics)}
+            </div>
+            <div class="tab-pane fade" id="nav-raw">
+                <pre class="bg-dark text-light p-3 rounded" style="max-height: 400px; overflow-y: auto; font-size: 0.8rem;"><code>${JSON.stringify(data.data, null, 2)}</code></pre>
+            </div>
+        </div>
+    `;
+    
+    dataContent.innerHTML = html;
+}
+
+function formatHistoricalDataSection(historicalData) {
+    if (!historicalData) {
+        return `
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                No historical data available
+            </div>
+        `;
+    }
+    
+    let html = '<div class="historical-detailed-view">';
+    
+    let yearlyData = {};
+    let totalTraffic = 0;
+    let totalCost = 0;
+    let totalYears = 0;
+    
+    for (const [rangeKey, rangeData] of Object.entries(historicalData)) {
+        if (rangeData && rangeData.metrics && Array.isArray(rangeData.metrics)) {
+            rangeData.metrics.forEach(month => {
+                const year = new Date(month.date).getFullYear();
+                if (!yearlyData[year]) {
+                    yearlyData[year] = { traffic: 0, cost: 0, months: 0 };
+                }
+                if (month.org_traffic) {
+                    yearlyData[year].traffic += month.org_traffic;
+                    totalTraffic += month.org_traffic;
+                }
+                if (month.org_cost) {
+                    yearlyData[year].cost += month.org_cost;
+                    totalCost += month.org_cost;
+                }
+                yearlyData[year].months++;
+            });
+        }
+    }
+    
+    const years = Object.keys(yearlyData).sort((a, b) => b - a);
+    totalYears = years.length;
+    
+    if (totalYears > 0) {
+        html += `
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="text-center p-3 bg-light rounded">
+                        <div class="h4 text-primary">${totalYears}</div>
+                        <small class="text-muted">Total Years</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 bg-light rounded">
+                        <div class="h4 text-success">${formatNumber(totalTraffic)}</div>
+                        <small class="text-muted">Total Traffic</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 bg-light rounded">
+                        <div class="h4 text-info">${formatNumber(totalCost)}</div>
+                        <small class="text-muted">Total Value</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 bg-light rounded">
+                        <div class="h4 text-warning">${formatNumber(Math.round(totalTraffic / totalYears))}</div>
+                        <small class="text-muted">Avg Yearly</small>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        html += `<div class="yearly-data-container" style="max-height: 400px; overflow-y: auto;">`;
+        html += `<div class="table-responsive">`;
+        html += `<table class="table table-sm table-striped">`;
+        html += `
+            <thead>
+                <tr>
+                    <th>Year</th>
+                    <th>Annual Traffic</th>
+                    <th>Annual Value</th>
+                    <th>Avg Monthly Traffic</th>
+                    <th>Months Covered</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        years.forEach(year => {
+            const data = yearlyData[year];
+            const avgMonthlyTraffic = Math.round(data.traffic / 12);
+            html += `
+                <tr>
+                    <td><strong>${year}</strong></td>
+                    <td><span class="badge bg-primary">${formatNumber(data.traffic)}</span></td>
+                    <td><span class="badge bg-success">$${formatNumber(data.cost)}</span></td>
+                    <td><span class="badge bg-warning">${formatNumber(avgMonthlyTraffic)}</span></td>
+                    <td><span class="badge bg-info">${data.months} months</span></td>
+                </tr>
+            `;
+        });
+        
+        html += `</tbody></table></div></div>`;
+    }
+    
+    html += '</div>';
+    return html;
+}
+
+function formatNumber(num) {
+    if (!num || num === 0) return '0';
+    return num.toLocaleString();
+}
+
+function formatDataSection(title, data) {
+    if (!data || data.error) {
+        return `
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                ${data?.error || 'No data available'}
+            </div>
+        `;
+    }
+    
+    if (title === 'Current Metrics' && data.metrics) {
+        const metrics = data.metrics;
+        return `
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-3">
+                    <div class="metric-card bg-success bg-opacity-10 border border-success border-opacity-25 rounded p-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-search text-success me-2"></i>
+                            <div>
+                                <div class="h4 mb-1 text-success">${formatNumber(metrics.org_keywords || 0)}</div>
+                                <small class="text-muted">Organic Keywords</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="metric-card bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded p-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-graph-up-arrow text-primary me-2"></i>
+                            <div>
+                                <div class="h4 mb-1 text-primary">${formatNumber(metrics.org_traffic || 0)}</div>
+                                <small class="text-muted">Organic Traffic</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="metric-card bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded p-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-trophy text-warning me-2"></i>
+                            <div>
+                                <div class="h4 mb-1 text-warning">${formatNumber(metrics.org_keywords_1_3 || 0)}</div>
+                                <small class="text-muted">Top 1-3 Keywords</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="metric-card bg-info bg-opacity-10 border border-info border-opacity-25 rounded p-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-currency-dollar text-info me-2"></i>
+                            <div>
+                                <div class="h4 mb-1 text-info">$${formatNumber(metrics.org_cost || 0)}</div>
+                                <small class="text-muted">Organic Value</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ${metrics.paid_traffic > 0 || metrics.paid_keywords > 0 ? `
+                <div class="col-12"><hr class="my-3"></div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="metric-card bg-secondary bg-opacity-10 border border-secondary border-opacity-25 rounded p-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-megaphone text-secondary me-2"></i>
+                            <div>
+                                <div class="h4 mb-1 text-secondary">${formatNumber(metrics.paid_keywords || 0)}</div>
+                                <small class="text-muted">Paid Keywords</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="metric-card bg-secondary bg-opacity-10 border border-secondary border-opacity-25 rounded p-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-mouse text-secondary me-2"></i>
+                            <div>
+                                <div class="h4 mb-1 text-secondary">${formatNumber(metrics.paid_traffic || 0)}</div>
+                                <small class="text-muted">Paid Traffic</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="metric-card bg-secondary bg-opacity-10 border border-secondary border-opacity-25 rounded p-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark text-secondary me-2"></i>
+                            <div>
+                                <div class="h4 mb-1 text-secondary">${formatNumber(metrics.paid_pages || 0)}</div>
+                                <small class="text-muted">Paid Pages</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="metric-card bg-secondary bg-opacity-10 border border-secondary border-opacity-25 rounded p-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-currency-dollar text-secondary me-2"></i>
+                            <div>
+                                <div class="h4 mb-1 text-secondary">$${formatNumber(metrics.paid_cost || 0)}</div>
+                                <small class="text-muted">Paid Value</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    if (title === 'Domain Rating' && data.domain_rating) {
+        const dr = data.domain_rating;
+        return `
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="text-center p-4">
+                        <div class="dr-display mb-4">
+                            <div class="dr-circle mx-auto mb-3" style="width: 120px; height: 120px; background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 800;">
+                                DR ${dr.domain_rating}
+                            </div>
+                            <h3 class="text-primary">Domain Rating ${dr.domain_rating}</h3>
+                        </div>
+                        ${dr.ahrefs_rank ? `
+                        <div class="rank-info">
+                            <div class="bg-light rounded p-3">
+                                <i class="bi bi-trophy text-warning me-2"></i>
+                                <span class="h5 mb-0">Ahrefs Rank: #${formatNumber(dr.ahrefs_rank)}</span>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    if (title === 'Backlinks Stats' && data.metrics) {
+        const stats = data.metrics;
+        return `
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="metric-card bg-success bg-opacity-10 border border-success border-opacity-25 rounded p-4">
+                        <div class="text-center">
+                            <i class="bi bi-link text-success mb-2" style="font-size: 2rem;"></i>
+                            <div class="h3 mb-1 text-success">${formatNumber(stats.live || 0)}</div>
+                            <div class="text-muted">Live Backlinks</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="metric-card bg-info bg-opacity-10 border border-info border-opacity-25 rounded p-4">
+                        <div class="text-center">
+                            <i class="bi bi-globe text-info mb-2" style="font-size: 2rem;"></i>
+                            <div class="h3 mb-1 text-info">${formatNumber(stats.live_refdomains || 0)}</div>
+                            <div class="text-muted">Referring Domains</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="metric-card bg-secondary bg-opacity-10 border border-secondary border-opacity-25 rounded p-4">
+                        <div class="text-center">
+                            <i class="bi bi-archive text-secondary mb-2" style="font-size: 2rem;"></i>
+                            <div class="h3 mb-1 text-secondary">${formatNumber(stats.all_time || 0)}</div>
+                            <div class="text-muted">All Time Backlinks</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="metric-card bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded p-4">
+                        <div class="text-center">
+                            <i class="bi bi-collection text-warning mb-2" style="font-size: 2rem;"></i>
+                            <div class="h3 mb-1 text-warning">${formatNumber(stats.all_time_refdomains || 0)}</div>
+                            <div class="text-muted">All Time Domains</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    return `<pre class="bg-light p-3 rounded" style="max-height: 300px; overflow-y: auto; font-size: 0.85rem;"><code>${JSON.stringify(data, null, 2)}</code></pre>`;
+}
+
+function copyUrl(url) {
+    navigator.clipboard.writeText(url)
+        .then(() => {
+            showNotification('URL copied to clipboard!', 'success');
+        })
+        .catch(err => {
+            showNotification('Failed to copy URL', 'error');
+        });
+}
+
+function importToOutreach(urlDataId) {
+    if (!confirm('Import this URL to outreach?')) {
+        return;
+    }
+    
+    fetch('/ahrefs/import-single-to-outreach', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            url_data_id: urlDataId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+        } else {
+            showNotification(data.message, 'warning');
+        }
+    })
+    .catch(error => {
+        showNotification('Error importing to outreach: ' + error.message, 'error');
+    });
+}
+
+function copyFullDataToClipboard() {
+    if (currentFullData && currentFullData.data) {
+        navigator.clipboard.writeText(JSON.stringify(currentFullData.data, null, 2))
+            .then(() => {
+                showNotification('Complete data copied to clipboard!', 'success');
+            })
+            .catch(err => {
+                showNotification('Failed to copy data', 'error');
+            });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const wwwToggles = document.querySelectorAll('input[name="wwwToggle"]');
+    const tableRows = document.querySelectorAll('.table-row');
+    
+    function applyWwwFilter(filterType) {
+        tableRows.forEach(row => {
+            const urlCell = row.querySelector('.url-cell h6');
+            if (!urlCell) return;
+            
+            const url = urlCell.textContent.trim();
+            const hasWww = url.includes('www.');
+            
+            switch(filterType) {
+                case 'www':
+                    row.style.display = hasWww ? 'table-row' : 'none';
+                    break;
+                case 'no_www':
+                    row.style.display = !hasWww ? 'table-row' : 'none';
+                    break;
+                case 'both':
+                default:
+                    row.style.display = 'table-row';
+                    break;
+            }
+        });
+        
+        updateVisibleCount();
+    }
+    
+    function updateVisibleCount() {
+        const visibleRows = Array.from(tableRows).filter(row => 
+            row.style.display !== 'none'
+        ).length;
+        
+        const countElement = document.querySelector('.card-header .text-muted.small');
+        if (countElement) {
+            countElement.textContent = `Showing ${visibleRows} records`;
+        }
+    }
+    
+    wwwToggles.forEach(toggle => {
+        toggle.addEventListener('change', function() {
+            if (this.checked) {
+                applyWwwFilter(this.value);
+            }
+        });
+    });
+    
+    applyWwwFilter('both');
+    
+    document.querySelectorAll('.table-row').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-1px)';
+            this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+});
+
+function formatKeywordsSection(keywordsData) {
+    if (!keywordsData || !keywordsData.keywords) {
+        return `
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                No keywords data available
+            </div>
+        `;
+    }
+    
+    let html = '<div class="keywords-detailed-view">';
+    html += `<div class="table-responsive">`;
+    html += `<table class="table table-sm table-striped">`;
+    html += `
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Keyword</th>
+                <th>Traffic</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    keywordsData.keywords.forEach((keyword, index) => {
+        html += `
+            <tr>
+                <td><strong>${index + 1}</strong></td>
+                <td>${keyword.keyword}</td>
+                <td><span class="badge bg-primary">${formatNumber(keyword.sum_traffic)}</span></td>
+            </tr>
+        `;
+    });
+    
+    html += `</tbody></table></div></div>`;
+    return html;
+}
+
+function formatCountriesSection(countryData) {
+    if (!countryData || !countryData.metrics) {
+        return `
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                No country data available
+            </div>
+        `;
+    }
+    
+    const countries = countryData.metrics;
+    const totalTraffic = countries.reduce((sum, country) => sum + (country.org_traffic || 0), 0);
+    
+    let significantCountries = [];
+    let otherTrafficSum = 0;
+    let otherCountriesCount = 0;
+    
+    countries.forEach(country => {
+        const traffic = country.org_traffic || 0;
+        const percentage = totalTraffic > 0 ? ((traffic / totalTraffic) * 100) : 0;
+        
+        if (percentage >= 0.1) {
+            significantCountries.push({
+                country: country.country,
+                percentage: percentage.toFixed(2)
+            });
+        } else {
+            otherTrafficSum += traffic;
+            otherCountriesCount++;
+        }
+    });
+    
+    const otherPercentage = totalTraffic > 0 ? ((otherTrafficSum / totalTraffic) * 100) : 0;
+    
+    let html = '<div class="countries-detailed-view">';
+    html += `<div class="row mb-3">`;
+    html += `<div class="col-md-6">`;
+    html += `<div class="text-center p-3 bg-light rounded">`;
+    html += `<div class="h4 text-success">${significantCountries.length}</div>`;
+    html += `<small class="text-muted">Major Countries</small>`;
+    html += `</div></div>`;
+    
+    if (otherCountriesCount > 0) {
+        html += `<div class="col-md-6">`;
+        html += `<div class="text-center p-3 bg-light rounded">`;
+        html += `<div class="h4 text-info">${otherCountriesCount}</div>`;
+        html += `<small class="text-muted">Other Countries</small>`;
+        html += `</div></div>`;
+    }
+    html += `</div>`;
+    
+    html += `<div class="table-responsive">`;
+    html += `<table class="table table-sm table-striped">`;
+    html += `
+        <thead>
+            <tr>
+                <th>Country</th>
+                <th>Percentage</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    significantCountries.forEach(country => {
+        html += `
+            <tr>
+                <td><strong>${country.country}</strong></td>
+                <td><span class="badge bg-success">${country.percentage}%</span></td>
+            </tr>
+        `;
+    });
+    
+    if (otherPercentage > 0) {
+        html += `
+            <tr>
+                <td><strong>Other (${otherCountriesCount} countries)</strong></td>
+                <td><span class="badge bg-secondary">${otherPercentage.toFixed(2)}%</span></td>
+            </tr>
+        `;
+    }
+    
+    html += `</tbody></table></div></div>`;
+    return html;
+}
+
+function syncToSheets() {
+    fetch('/ahrefs/sync-to-sheets', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification(data.message, 'success');
+    })
+    .catch(error => {
+        showNotification('Sync failed', 'error');
+    });
+}
+
+const filterFields = {
+    'org_keywords': { label: 'Organic Keywords', type: 'number', path: 'current_metrics.metrics.org_keywords' },
+    'org_traffic': { label: 'Organic Traffic', type: 'number', path: 'current_metrics.metrics.org_traffic' },
+    'org_cost': { label: 'Organic Value ($)', type: 'number', path: 'current_metrics.metrics.org_cost' },
+    'org_keywords_1_3': { label: 'Top 1-3 Keywords', type: 'number', path: 'current_metrics.metrics.org_keywords_1_3' },
+    'domain_rating': { label: 'Domain Rating', type: 'number', path: 'domain_rating.domain_rating.domain_rating' },
+    'ahrefs_rank': { label: 'Ahrefs Rank', type: 'number', path: 'domain_rating.domain_rating.ahrefs_rank' },
+    'live_backlinks': { label: 'Live Backlinks', type: 'number', path: 'backlinks_stats.metrics.live' },
+    'live_refdomains': { label: 'Live Ref Domains', type: 'number', path: 'backlinks_stats.metrics.live_refdomains' },
+    'all_time_backlinks': { label: 'All Time Backlinks', type: 'number', path: 'backlinks_stats.metrics.all_time' },
+    'all_time_refdomains': { label: 'All Time Ref Domains', type: 'number', path: 'backlinks_stats.metrics.all_time_refdomains' }
+};
+
+let activeFilters = [];
+let allRowsData = new Map();
+
+function initializeFilters() {
+    preloadAllData();
+    
+    fetch('/ahrefs/get-filters')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.filters && data.filters.length > 0) {
+                activeFilters = data.filters;
+                renderFilters();
+                setTimeout(() => applyFilters(), 1000);
+            }
+        })
+        .catch(error => console.error('Error loading filters:', error));
+}
+
+function preloadAllData() {
+    const tableRows = document.querySelectorAll('.table-row');
+    
+    tableRows.forEach(row => {
+        const dataId = row.querySelector('.btn[onclick*="viewFullData"]')?.getAttribute('onclick')?.match(/\d+/)?.[0];
+        
+        if (dataId && !allRowsData.has(dataId)) {
+            fetch(`/ahrefs/view_data/${dataId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        allRowsData.set(dataId, data.data);
+                    }
+                })
+                .catch(error => console.error('Error preloading data:', error));
+        }
+    });
+}
+
+function addFilter() {
+    const filterId = 'filter_' + Date.now();
+    const filter = {
+        id: filterId,
+        field: 'org_traffic',
+        operator: 'range',
+        min: '',
+        max: ''
+    };
+    
+    activeFilters.push(filter);
+    renderFilters();
+}
+
+function removeFilter(filterId) {
+    activeFilters = activeFilters.filter(f => f.id !== filterId);
+    renderFilters();
+    if (activeFilters.length === 0) {
+        saveFilters();
+        applyFilters();
+    }
+}
+
+function renderFilters() {
+    const container = document.getElementById('filtersContainer');
+    const noFiltersMsg = document.getElementById('noFiltersMessage');
+    
+    if (activeFilters.length === 0) {
+        noFiltersMsg.style.display = 'block';
+        return;
+    }
+    
+    noFiltersMsg.style.display = 'none';
+    
+    let html = '<div class="row g-3">';
+    
+    activeFilters.forEach(filter => {
+        html += `
+            <div class="col-lg-6">
+                <div class="filter-item border rounded p-3 bg-light">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label small mb-1">Field</label>
+                            <select class="form-select form-select-sm filter-field" data-filter-id="${filter.id}">
+                                ${Object.entries(filterFields).map(([key, field]) => 
+                                    `<option value="${key}" ${filter.field === key ? 'selected' : ''}>${field.label}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small mb-1">Min</label>
+                            <input type="number" class="form-control form-control-sm filter-min" 
+                                   data-filter-id="${filter.id}" value="${filter.min}" 
+                                   placeholder="Min">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small mb-1">Max</label>
+                            <input type="number" class="form-control form-control-sm filter-max" 
+                                   data-filter-id="${filter.id}" value="${filter.max}" 
+                                   placeholder="Max">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-sm btn-outline-danger w-100 remove-filter" 
+                                    data-filter-id="${filter.id}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+    
+    document.querySelectorAll('.filter-field').forEach(select => {
+        select.addEventListener('change', function() {
+            updateFilterValue(this.dataset.filterId, 'field', this.value);
+        });
+    });
+    
+    document.querySelectorAll('.filter-min').forEach(input => {
+        input.addEventListener('input', function() {
+            updateFilterValue(this.dataset.filterId, 'min', this.value);
+        });
+    });
+    
+    document.querySelectorAll('.filter-max').forEach(input => {
+        input.addEventListener('input', function() {
+            updateFilterValue(this.dataset.filterId, 'max', this.value);
+        });
+    });
+    
+    document.querySelectorAll('.remove-filter').forEach(btn => {
+        btn.addEventListener('click', function() {
+            removeFilter(this.dataset.filterId);
+        });
+    });
+}
+
+function updateFilterValue(filterId, field, value) {
+    const filter = activeFilters.find(f => f.id === filterId);
+    if (filter) {
+        filter[field] = value;
+    }
+}
+
+function saveFilters() {
+    fetch('/ahrefs/save-filters', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filters: activeFilters })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Filters saved', 'success');
+        }
+    })
+    .catch(error => console.error('Error saving filters:', error));
+}
+
+function clearAllFilters() {
+    if (confirm('Clear all filters?')) {
+        activeFilters = [];
+        renderFilters();
+        
+        fetch('/ahrefs/clear-filters', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showNotification('Filters cleared', 'success');
+            applyFilters();
+        });
+    }
+}
+
+function getNestedValue(obj, path) {
+    const value = path.split('.').reduce((current, prop) => {
+        return current && current[prop] !== undefined ? current[prop] : null;
+    }, obj);
+    
+    if (value === null || value === undefined) {
+        return null;
+    }
+    
+    return value;
+}
+
+function applyFilters() {
+    const tableRows = document.querySelectorAll('.table-row');
+    let visibleCount = 0;
+    let hiddenCount = 0;
+    
+    if (activeFilters.length === 0) {
+        tableRows.forEach(row => {
+            row.style.display = 'table-row';
+            visibleCount++;
+        });
+        document.getElementById('filterStatus').style.display = 'none';
+        saveFilters();
+        return;
+    }
+    
+    tableRows.forEach(row => {
+        const dataId = row.querySelector('.btn[onclick*="viewFullData"]')?.getAttribute('onclick')?.match(/\d+/)?.[0];
+        
+        if (!dataId) {
+            row.style.display = 'table-row';
+            visibleCount++;
+            return;
+        }
+        
+        const data = allRowsData.get(dataId);
+        
+        if (!data) {
+            row.style.display = 'table-row';
+            visibleCount++;
+            return;
+        }
+        
+        let passesAllFilters = true;
+        
+        for (const filter of activeFilters) {
+            const hasMin = filter.min !== '' && filter.min !== null && filter.min !== undefined;
+            const hasMax = filter.max !== '' && filter.max !== null && filter.max !== undefined;
+            
+            if (!hasMin && !hasMax) continue;
+            
+            const fieldConfig = filterFields[filter.field];
+            const value = getNestedValue(data, fieldConfig.path);
+            
+            if (value === null || value === undefined || value === 0) {
+                passesAllFilters = false;
+                break;
+            }
+            
+            const numValue = Number(value);
+            if (isNaN(numValue) || numValue === 0) {
+                passesAllFilters = false;
+                break;
+            }
+            
+            if (hasMin) {
+                const minValue = Number(filter.min);
+                if (numValue < minValue) {
+                    passesAllFilters = false;
+                    break;
+                }
+            }
+            
+            if (hasMax) {
+                const maxValue = Number(filter.max);
+                if (numValue > maxValue) {
+                    passesAllFilters = false;
+                    break;
+                }
+            }
+        }
+        
+        if (passesAllFilters) {
+            row.style.display = 'table-row';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+            hiddenCount++;
+        }
+    });
+    
+    updateFilterStatus(visibleCount, hiddenCount);
+    saveFilters();
+}
+
+function updateFilterStatus(visible, hidden) {
+    const statusDiv = document.getElementById('filterStatus');
+    const statusText = document.getElementById('filterStatusText');
+    
+    if (activeFilters.length > 0) {
+        statusDiv.style.display = 'block';
+        statusText.textContent = `Showing ${visible} records matching ${activeFilters.length} filter(s). ${hidden} hidden.`;
+    } else {
+        statusDiv.style.display = 'none';
+    }
+}
+
+document.getElementById('addFilterBtn').addEventListener('click', addFilter);
+document.getElementById('clearFiltersBtn').addEventListener('click', clearAllFilters);
+document.getElementById('applyFiltersBtn').addEventListener('click', applyFilters);
+
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.delete-data-btn')) {
+        const btn = e.target.closest('.delete-data-btn');
+        const dataId = btn.dataset.id;
+        
+        if (confirm('Are you sure you want to delete this data?')) {
+            fetch(`/ahrefs/delete_data/${dataId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    const row = btn.closest('.table-row');
+                    row.style.transition = 'opacity 0.3s ease';
+                    row.style.opacity = '0';
+                    setTimeout(() => row.remove(), 300);
+                    
+                    allRowsData.delete(dataId);
+                    showNotification('Data deleted successfully', 'success');
+                } else {
+                    showNotification('Failed to delete data', 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Error deleting data: ' + error.message, 'error');
+            });
+        }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFilters();
+});
+
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.archive-data-btn')) {
+        const btn = e.target.closest('.archive-data-btn');
+        const dataId = btn.dataset.id;
+        
+        if (confirm('Archive this data? It can be restored later from the Archived section.')) {
+            fetch('/ahrefs/archive-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ids: [dataId] })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const row = btn.closest('.table-row');
+                    row.style.transition = 'opacity 0.3s ease';
+                    row.style.opacity = '0';
+                    setTimeout(() => row.remove(), 300);
+                    
+                    allRowsData.delete(dataId);
+                    showNotification('Data archived successfully', 'success');
+                } else {
+                    showNotification('Failed to archive data', 'error');
+                }
+            })
+            .catch(error => {
+                showNotification('Error archiving data: ' + error.message, 'error');
+            });
+        }
+    }
+});
+
+let selectedDataIds = new Set();
+
+function updateSelectedCountData() {
+    const count = selectedDataIds.size;
+    document.getElementById('selectedCountData').textContent = `${count} selected`;
+    document.getElementById('bulkArchiveBtn').disabled = count === 0;
+    document.getElementById('bulkDeleteDataBtn').disabled = count === 0;
+}
+
+document.getElementById('selectAllData').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.row-checkbox-data');
+    checkboxes.forEach(cb => {
+        cb.checked = this.checked;
+        if (this.checked) {
+            selectedDataIds.add(cb.dataset.id);
+        } else {
+            selectedDataIds.delete(cb.dataset.id);
+        }
+    });
+    document.getElementById('selectAllDataHeader').checked = this.checked;
+    updateSelectedCountData();
+});
+
+document.getElementById('selectAllDataHeader').addEventListener('change', function() {
+    document.getElementById('selectAllData').checked = this.checked;
+    document.getElementById('selectAllData').dispatchEvent(new Event('change'));
+});
+
+document.querySelectorAll('.row-checkbox-data').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            selectedDataIds.add(this.dataset.id);
+        } else {
+            selectedDataIds.delete(this.dataset.id);
+            document.getElementById('selectAllData').checked = false;
+            document.getElementById('selectAllDataHeader').checked = false;
+        }
+        updateSelectedCountData();
+        
+        const allCheckboxes = document.querySelectorAll('.row-checkbox-data');
+        const checkedCheckboxes = document.querySelectorAll('.row-checkbox-data:checked');
+        if (allCheckboxes.length === checkedCheckboxes.length) {
+            document.getElementById('selectAllData').checked = true;
+            document.getElementById('selectAllDataHeader').checked = true;
+        }
+    });
+});
+
+document.getElementById('bulkArchiveBtn').addEventListener('click', function() {
+    if (selectedDataIds.size === 0) return;
+    
+    if (confirm(`Archive ${selectedDataIds.size} record(s)? They can be restored later from the Archived section.`)) {
+        fetch('/ahrefs/archive-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: Array.from(selectedDataIds) })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`Archived ${data.archived} record(s)`, 'success');
+                selectedDataIds.forEach(id => {
+                    allRowsData.delete(id);
+                });
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Failed to archive records', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error: ' + error.message, 'error');
+        });
+    }
+});
+
+document.getElementById('bulkDeleteDataBtn').addEventListener('click', function() {
+    if (selectedDataIds.size === 0) return;
+    
+    if (confirm(`Delete ${selectedDataIds.size} record(s)? This cannot be undone!`)) {
+        fetch('/ahrefs/delete-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: Array.from(selectedDataIds) })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`Deleted ${data.deleted} record(s)`, 'success');
+                selectedDataIds.forEach(id => {
+                    allRowsData.delete(id);
+                });
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Failed to delete records', 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error: ' + error.message, 'error');
+        });
+    }
+});
+</script>
+{% endblock %}

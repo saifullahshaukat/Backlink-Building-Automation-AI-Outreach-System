@@ -1,0 +1,604 @@
+{% extends 'base.html' %}
+
+{% block title %}Dupe Checker{% endblock %}
+{% block page_title %}Dupe Checker{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-layers text-primary me-2"></i>
+                    <h5 class="mb-0">Remove Duplicate URLs</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Upload two CSV files with URL columns. The tool will remove URLs from the primary file that exist in the secondary file.
+                </div>
+                
+                <form id="dupeForm">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Primary List (URLs to Clean)</label>
+                            <div class="input-methods mb-3">
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="primaryMethod" id="primaryPaste" value="paste" checked>
+                                    <label class="btn btn-outline-primary" for="primaryPaste">
+                                        <i class="bi bi-clipboard me-1"></i>Paste
+                                    </label>
+                                    <input type="radio" class="btn-check" name="primaryMethod" id="primaryUpload" value="upload">
+                                    <label class="btn btn-outline-primary" for="primaryUpload">
+                                        <i class="bi bi-upload me-1"></i>Upload
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div id="primaryPasteArea">
+                                <textarea class="form-control font-monospace" id="primaryCsv" rows="12" 
+                                          placeholder="URL,Category&#10;https://example.com,Tech&#10;https://example2.com,News"></textarea>
+                                <small class="text-muted">Paste CSV with URL column</small>
+                            </div>
+                            
+                            <div id="primaryUploadArea" style="display:none;">
+                                <div class="file-upload-zone" onclick="document.getElementById('primaryFile').click()">
+                                    <div class="upload-content">
+                                        <i class="bi bi-cloud-upload display-6 text-muted mb-3"></i>
+                                        <h6>Click to upload CSV file</h6>
+                                        <p class="text-muted small mb-0">or drag and drop</p>
+                                    </div>
+                                    <input type="file" id="primaryFile" accept=".csv" style="display:none;">
+                                </div>
+                                <small class="text-muted">Upload CSV file with URL column</small>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Secondary List (URLs to Remove)</label>
+                            <div class="input-methods mb-3">
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="secondaryMethod" id="secondaryPaste" value="paste" checked>
+                                    <label class="btn btn-outline-primary" for="secondaryPaste">
+                                        <i class="bi bi-clipboard me-1"></i>Paste
+                                    </label>
+                                    <input type="radio" class="btn-check" name="secondaryMethod" id="secondaryUpload" value="upload">
+                                    <label class="btn btn-outline-primary" for="secondaryUpload">
+                                        <i class="bi bi-upload me-1"></i>Upload
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div id="secondaryPasteArea">
+                                <textarea class="form-control font-monospace" id="secondaryCsv" rows="12" 
+                                          placeholder="URL&#10;https://example.com&#10;www.example2.com"></textarea>
+                                <small class="text-muted">Paste CSV with URL column</small>
+                            </div>
+                            
+                            <div id="secondaryUploadArea" style="display:none;">
+                                <div class="file-upload-zone" onclick="document.getElementById('secondaryFile').click()">
+                                    <div class="upload-content">
+                                        <i class="bi bi-cloud-upload display-6 text-muted mb-3"></i>
+                                        <h6>Click to upload CSV file</h6>
+                                        <p class="text-muted small mb-0">or drag and drop</p>
+                                    </div>
+                                    <input type="file" id="secondaryFile" accept=".csv" style="display:none;">
+                                </div>
+                                <small class="text-muted">Upload CSV file with URL column</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <button type="button" class="btn btn-secondary" onclick="clearFields()">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Clear Fields
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-layers me-2"></i>Process Duplicates
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card modern-card">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-info-circle text-info me-2"></i>
+                    <h5 class="mb-0">How It Works</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="process-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h6>Upload Lists</h6>
+                        <p class="text-muted small mb-0">Paste your primary and secondary CSV data</p>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h6>URL Normalization</h6>
+                        <p class="text-muted small mb-0">URLs are normalized (www, https, trailing slashes)</p>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h6>Duplicate Removal</h6>
+                        <p class="text-muted small mb-0">Matching URLs are removed from primary list</p>
+                    </div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h6>Download Clean List</h6>
+                        <p class="text-muted small mb-0">Get your deduplicated CSV file</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="resultsCard" class="card modern-card" style="display:none;">
+    <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle text-success me-2"></i>
+                <h5 class="mb-0">Results</h5>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-warning" onclick="downloadDuplicates()" id="downloadDupesBtn">
+                    <i class="bi bi-download me-1"></i>Download Duplicates
+                </button>
+                <button type="button" class="btn btn-success" onclick="downloadCsv()">
+                    <i class="bi bi-download me-1"></i>Download Clean CSV
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row g-3 text-center">
+            <div class="col-md-4">
+                <div class="result-stat">
+                    <div class="stat-number text-danger" id="removedCount">0</div>
+                    <div class="stat-label">Duplicates Removed</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="result-stat">
+                    <div class="stat-number text-success" id="finalCount">0</div>
+                    <div class="stat-label">Final Count</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="result-stat">
+                    <div class="stat-number text-primary" id="percentageReduced">0%</div>
+                    <div class="stat-label">Reduction</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <label class="form-label fw-medium">Clean CSV Preview</label>
+            <textarea class="form-control font-monospace" id="cleanCsvPreview" rows="8" readonly></textarea>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let cleanedCsvData = '';
+let duplicatesCsvData = '';
+
+function showNotification(message, type = 'info') {
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : type === 'warning' ? 'alert-warning' : 'alert-info';
+    const iconClass = type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-x-circle' : type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+    
+    let flashContainer = document.querySelector('.flash-messages');
+    if (!flashContainer) {
+        flashContainer = document.createElement('div');
+        flashContainer.className = 'flash-messages';
+        document.body.appendChild(flashContainer);
+    }
+    
+    const alert = document.createElement('div');
+    alert.className = `alert ${alertClass} alert-dismissible fade show modern-alert`;
+    alert.innerHTML = `
+        <div class="alert-content">
+            <i class="bi ${iconClass} me-2"></i>
+            ${message}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    flashContainer.appendChild(alert);
+    
+    setTimeout(() => {
+        if (alert.parentNode) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }
+    }, 15000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input[name="primaryMethod"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'paste') {
+                document.getElementById('primaryPasteArea').style.display = 'block';
+                document.getElementById('primaryUploadArea').style.display = 'none';
+            } else {
+                document.getElementById('primaryPasteArea').style.display = 'none';
+                document.getElementById('primaryUploadArea').style.display = 'block';
+            }
+        });
+    });
+
+    document.querySelectorAll('input[name="secondaryMethod"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'paste') {
+                document.getElementById('secondaryPasteArea').style.display = 'block';
+                document.getElementById('secondaryUploadArea').style.display = 'none';
+            } else {
+                document.getElementById('secondaryPasteArea').style.display = 'none';
+                document.getElementById('secondaryUploadArea').style.display = 'block';
+            }
+        });
+    });
+
+    document.getElementById('primaryFile').addEventListener('change', function(e) {
+        handleFileUpload(e.target.files[0], 'primaryCsv');
+    });
+
+    document.getElementById('secondaryFile').addEventListener('change', function(e) {
+        handleFileUpload(e.target.files[0], 'secondaryCsv');
+    });
+
+    setupDragDrop('primaryUploadArea', 'primaryCsv');
+    setupDragDrop('secondaryUploadArea', 'secondaryCsv');
+});
+
+function handleFileUpload(file, targetId) {
+    if (!file) return;
+    
+    if (!file.name.endsWith('.csv')) {
+        showNotification('Please upload a CSV file', 'warning');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById(targetId).value = e.target.result;
+        showNotification(`File "${file.name}" uploaded successfully`, 'success');
+    };
+    reader.onerror = function() {
+        showNotification('Error reading file', 'error');
+    };
+    reader.readAsText(file);
+}
+
+function setupDragDrop(containerId, targetId) {
+    const container = document.getElementById(containerId);
+    
+    container.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('drag-over');
+    });
+    
+    container.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+    });
+    
+    container.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileUpload(files[0], targetId);
+        }
+    });
+}
+
+function getData() {
+    const primaryMethod = document.querySelector('input[name="primaryMethod"]:checked').value;
+    const secondaryMethod = document.querySelector('input[name="secondaryMethod"]:checked').value;
+    
+    let primaryData = '';
+    let secondaryData = '';
+    
+    if (primaryMethod === 'paste') {
+        primaryData = document.getElementById('primaryCsv').value.trim();
+    } else {
+        primaryData = document.getElementById('primaryCsv').value.trim();
+    }
+    
+    if (secondaryMethod === 'paste') {
+        secondaryData = document.getElementById('secondaryCsv').value.trim();
+    } else {
+        secondaryData = document.getElementById('secondaryCsv').value.trim();
+    }
+    
+    return { primaryData, secondaryData };
+}
+
+document.getElementById('dupeForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const { primaryData, secondaryData } = getData();
+    
+    if (!primaryData || !secondaryData) {
+        showNotification('Both CSV fields are required', 'warning');
+        return;
+    }
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+    submitBtn.disabled = true;
+    
+    fetch('/dupe-checker/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            primary_csv: primaryData,
+            secondary_csv: secondaryData
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            cleanedCsvData = data.cleaned_csv;
+            duplicatesCsvData = data.duplicates_csv;
+            
+            document.getElementById('removedCount').textContent = data.removed_count;
+            document.getElementById('finalCount').textContent = data.final_count;
+            
+            const originalCount = data.final_count + data.removed_count;
+            const reduction = originalCount > 0 ? Math.round((data.removed_count / originalCount) * 100) : 0;
+            document.getElementById('percentageReduced').textContent = reduction + '%';
+            
+            const preview = data.cleaned_csv.length > 1000 ? 
+                data.cleaned_csv.substring(0, 1000) + '\n... (truncated for preview)' : 
+                data.cleaned_csv;
+            document.getElementById('cleanCsvPreview').value = preview;
+            
+            const downloadDupesBtn = document.getElementById('downloadDupesBtn');
+            if (data.removed_count > 0) {
+                downloadDupesBtn.style.display = 'block';
+            } else {
+                downloadDupesBtn.style.display = 'none';
+            }
+            
+            document.getElementById('resultsCard').style.display = 'block';
+            document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth' });
+            
+            showNotification(`Successfully removed ${data.removed_count} duplicate URLs`, 'success');
+        } else {
+            showNotification('Error: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Processing failed: ' + error.message, 'error');
+    })
+    .finally(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+});
+
+function clearFields() {
+    document.getElementById('primaryCsv').value = '';
+    document.getElementById('secondaryCsv').value = '';
+    document.getElementById('primaryFile').value = '';
+    document.getElementById('secondaryFile').value = '';
+    document.getElementById('resultsCard').style.display = 'none';
+    cleanedCsvData = '';
+    duplicatesCsvData = '';
+    
+    document.getElementById('primaryPaste').checked = true;
+    document.getElementById('secondaryPaste').checked = true;
+    document.getElementById('primaryPasteArea').style.display = 'block';
+    document.getElementById('primaryUploadArea').style.display = 'none';
+    document.getElementById('secondaryPasteArea').style.display = 'block';
+    document.getElementById('secondaryUploadArea').style.display = 'none';
+}
+
+function downloadCsv() {
+    if (!cleanedCsvData) {
+        showNotification('No data to download', 'warning');
+        return;
+    }
+    
+    const blob = new Blob([cleanedCsvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `clean_urls_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+    
+    showNotification('CSV file downloaded successfully', 'success');
+}
+
+function downloadDuplicates() {
+    if (!duplicatesCsvData) {
+        showNotification('No duplicate data to download', 'warning');
+        return;
+    }
+    
+    const blob = new Blob([duplicatesCsvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `duplicate_urls_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+    
+    showNotification('Duplicate URLs CSV downloaded successfully', 'success');
+}
+</script>
+
+<style>
+.file-upload-zone {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 3rem 2rem;
+    text-align: center;
+    background: rgba(248, 249, 250, 0.5);
+    transition: var(--transition);
+    cursor: pointer;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.file-upload-zone:hover {
+    border-color: var(--sidebar-active);
+    background: rgba(9, 105, 218, 0.05);
+}
+
+.file-upload-zone.drag-over {
+    border-color: var(--sidebar-active);
+    background: rgba(9, 105, 218, 0.1);
+    transform: scale(1.02);
+}
+
+.upload-content h6 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.input-methods {
+    margin-bottom: 1rem;
+}
+
+.btn-check:checked + .btn-outline-primary {
+    background: var(--gradient-primary);
+    border-color: var(--sidebar-active);
+    color: white;
+}
+
+.process-step {
+    display: flex;
+    align-items: start;
+    margin-bottom: 1.5rem;
+}
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    background: var(--gradient-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    margin-right: 1rem;
+}
+
+.step-content h6 {
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.result-stat {
+    padding: 1.5rem 1rem;
+    background: rgba(248, 249, 250, 0.8);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.font-monospace {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.modern-card {
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.modern-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: rgba(248, 249, 250, 0.8);
+    border-bottom: 1px solid var(--border-color);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.btn {
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.form-control {
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.form-control:focus {
+    border-color: var(--sidebar-active);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+}
+
+@media (max-width: 768px) {
+    .modern-card:hover {
+        transform: none;
+    }
+    
+    .btn:hover {
+        transform: none;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .result-stat {
+        padding: 1rem 0.75rem;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}
