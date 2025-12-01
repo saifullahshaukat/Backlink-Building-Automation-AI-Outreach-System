@@ -23,7 +23,24 @@ class AdsyScraper:
         except:
             return None
     
-    def login(self, email='buildersearch123@gmail.com', password='321Ads890!'):
+    def login(self, email=None, password=None):
+        """
+        Login to Adsy platform
+        
+        Args:
+            email (str): Your Adsy account email - REQUIRED
+            password (str): Your Adsy account password - REQUIRED
+            
+        Returns:
+            bool: True if login successful, False otherwise
+            
+        Usage:
+            scraper = AdsyScraper()
+            scraper.login(email='your-email@example.com', password='your-password')
+        """
+        if not email or not password:
+            raise ValueError("Email and password are required for Adsy login")
+            
         login_url = 'https://cp.adsy.com/login'
         
         try:

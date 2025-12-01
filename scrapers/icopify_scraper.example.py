@@ -36,7 +36,7 @@ class IcopifyScraper:
         except:
             return False
 
-    def restart_driver_and_login(self):
+    def restart_driver_and_login(self, username, password):
         try:
             self.logger.warning(f"Driver crash detected. Restart attempt {self.driver_crashes + 1}")
             
@@ -62,7 +62,7 @@ class IcopifyScraper:
             login_success = False
             
             while self.login_attempts < self.max_login_attempts and not login_success:
-                login_success = self.login()
+                login_success = self.login(username=username, password=password)
                 if not login_success:
                     self.login_attempts += 1
                     time.sleep(10)
@@ -153,7 +153,25 @@ class IcopifyScraper:
             self.logger.error(f"Failed to initialize Chrome driver: {str(e)}")
             return False
 
-    def login(self, username="AndrewAUSSEO", password="321Test890!"):
+    def login(self, username=None, password=None):
+        """
+        Login to Icopify platform
+        
+        Args:
+            username (str): Your Icopify account username - REQUIRED
+            password (str): Your Icopify account password - REQUIRED
+            
+        Returns:
+            bool: True if login successful, False otherwise
+            
+        Usage:
+            scraper = IcopifyScraper()
+            scraper.setup_driver()
+            scraper.login(username='your-username', password='your-password')
+        """
+        if not username or not password:
+            raise ValueError("Username and password are required for Icopify login")
+            
         try:
             self.logger.info("Attempting to login...")
             self.driver.get(self.login_url)

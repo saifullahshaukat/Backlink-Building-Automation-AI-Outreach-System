@@ -38,6 +38,11 @@ instance/
 .env.*.local
 config.py
 
+# Files with credentials (use .example versions instead)
+app.py
+scrapers/adsy_scraper.py
+scrapers/icopify_scraper.py
+
 # Logs
 *.log
 logs/

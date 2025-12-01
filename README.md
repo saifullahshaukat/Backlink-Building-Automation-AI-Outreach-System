@@ -104,12 +104,12 @@ The application will be available at:
 - Local: `http://127.0.0.1:5005`
 - Network: `http://YOUR_IP:5005`
 
-## Default Login Credentials
+## 🔐 Default Login Credentials
 
 - **Username**: `admin`
-- **Password**: `123`
+- **Password**: `admin123`
 
-**Change these credentials immediately in production!**
+**⚠️ IMPORTANT: Change these credentials immediately after first login!**
 
 ## Project Structure
 
