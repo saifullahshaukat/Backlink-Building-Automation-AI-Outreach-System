@@ -72,57 +72,89 @@
 
 <div class="row g-4 mb-4">
     <div class="col-lg-4">
-        <div class="card modern-card h-100">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-upload me-2"></i>Step 1: Import Emails</h5>
+        <div class="card modern-card h-100 step-card">
+            <div class="card-header step-header step-1">
+                <div class="step-number">1</div>
+                <div class="step-info">
+                    <h5 class="mb-0"><i class="bi bi-upload me-2"></i>Import Emails</h5>
+                    <small class="opacity-75">Choose your source</small>
+                </div>
             </div>
             <div class="card-body">
                 <div class="mb-3">
-                    <label class="form-label fw-medium">Import Source</label>
-                    <select class="form-select form-select-lg" id="importSource">
+                    <label class="form-label fw-medium d-flex align-items-center">
+                        <i class="bi bi-box-arrow-in-down text-primary me-2"></i>
+                        Import Source
+                    </label>
+                    <select class="form-select form-select-lg enhanced-select" id="importSource">
                         <option value="extracted">From Extracted Emails</option>
                         <option value="file">Upload CSV/Excel File</option>
                     </select>
                 </div>
 
-                <div id="extractedOptions" class="mb-3">
-                    <label class="form-label fw-medium">Selection Mode</label>
-                    <div class="d-grid gap-2">
-                        <input type="radio" class="btn-check" name="emailMode" id="onePerUrl" value="one" checked>
-                        <label class="btn btn-outline-primary" for="onePerUrl">
-                            <i class="bi bi-envelope me-2"></i>Best Email Per URL
-                        </label>
-                        
-                        <input type="radio" class="btn-check" name="emailMode" id="allEmails" value="all">
-                        <label class="btn btn-outline-primary" for="allEmails">
-                            <i class="bi bi-envelope-open me-2"></i>All Emails Per URL
-                        </label>
+                <div id="extractedOptions" class="mb-3 animate-slide-in">
+                    <label class="form-label fw-medium d-flex align-items-center">
+                        <i class="bi bi-filter text-success me-2"></i>
+                        Selection Mode
+                    </label>
+                    <select class="form-select enhanced-select" id="emailSelectionMode">
+                        <option value="one" selected>
+                            <i class="bi bi-envelope"></i> Best Email Per URL (Recommended)
+                        </option>
+                        <option value="all">
+                            <i class="bi bi-envelope-open"></i> All Emails Per URL
+                        </option>
+                    </select>
+                    <div class="input-helper mt-1">
+                        <i class="bi bi-info-circle text-info me-1"></i>
+                        <small class="text-muted">Best Email: One quality email per domain</small>
                     </div>
                 </div>
 
-                <div id="fileUploadOptions" class="mb-3" style="display:none;">
-                    <div class="alert alert-info mb-3">
-                        <small><strong>📋 File Format:</strong><br>
-                        Required: <code>Email</code> column<br>
-                        Optional: <code>URL</code>, <code>Website</code>, or <code>Domain</code> column</small>
+                <div id="fileUploadOptions" class="mb-3 animate-slide-in" style="display:none;">
+                    <div class="alert alert-info border-0 shadow-sm">
+                        <div class="d-flex">
+                            <i class="bi bi-info-circle fs-4 me-3 text-primary"></i>
+                            <div>
+                                <strong class="d-block mb-1">📋 File Format Requirements</strong>
+                                <small>
+                                    <strong>Required:</strong> <code class="bg-white px-2 py-1 rounded">Email</code> column<br>
+                                    <strong>Optional:</strong> <code class="bg-white px-2 py-1 rounded">URL</code>, <code class="bg-white px-2 py-1 rounded">Website</code>, or <code class="bg-white px-2 py-1 rounded">Domain</code>
+                                </small>
+                            </div>
+                        </div>
                     </div>
                     <label class="form-label fw-medium">Select CSV or Excel File</label>
-                    <input type="file" class="form-control form-control-lg" id="emailFile" accept=".csv,.xlsx,.xls">
-                    <div class="mt-2">
+                    <div class="custom-file-upload">
+                        <label for="emailFile" class="file-upload-label">
+                            <div class="file-upload-content">
+                                <i class="bi bi-cloud-arrow-up fs-1 text-primary mb-2"></i>
+                                <div class="fw-medium">Choose file</div>
+                                <small class="text-muted">or drag and drop</small>
+                                <div id="fileNameDisplay" class="mt-2 text-success" style="display:none;"></div>
+                            </div>
+                        </label>
+                        <input type="file" class="d-none" id="emailFile" accept=".csv,.xlsx,.xls">
+                    </div>
+                    <div class="mt-2 text-center">
                         <button class="btn btn-sm btn-outline-secondary" type="button" onclick="downloadSampleCSV()">
                             <i class="bi bi-download me-1"></i>Download Sample CSV
                         </button>
                     </div>
                 </div>
 
-                <button class="btn btn-primary w-100 btn-lg" id="importEmailsBtn">
+                <button class="btn btn-primary w-100 btn-lg shadow-sm btn-hover-scale" id="importEmailsBtn">
                     <i class="bi bi-upload me-2"></i>Import Emails
+                    <i class="bi bi-arrow-right ms-2"></i>
                 </button>
                 
-                <div id="importedEmailsPreview" class="mt-3" style="display:none;">
-                    <div class="alert alert-info">
-                        <strong>Imported Emails Preview</strong>
-                        <div id="emailsPreviewList" class="mt-2" style="max-height: 150px; overflow-y: auto; font-size: 0.85rem;"></div>
+                <div id="importedEmailsPreview" class="mt-3 animate-slide-in" style="display:none;">
+                    <div class="preview-card">
+                        <div class="preview-header">
+                            <i class="bi bi-check-circle text-success me-2"></i>
+                            <strong>Imported Successfully</strong>
+                        </div>
+                        <div id="emailsPreviewList" class="preview-list"></div>
                     </div>
                 </div>
             </div>
@@ -130,34 +162,86 @@
     </div>
 
     <div class="col-lg-4">
-        <div class="card modern-card h-100">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Step 2: Email Template</h5>
+        <div class="card modern-card h-100 step-card">
+            <div class="card-header step-header step-2">
+                <div class="step-number">2</div>
+                <div class="step-info">
+                    <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>Email Template</h5>
+                    <small class="opacity-75">Craft your message</small>
+                </div>
             </div>
             <div class="card-body">
-                <div class="mb-2">
-                    <button class="btn btn-outline-secondary btn-sm w-100" id="loadTemplateBtn">
+                <div class="mb-3">
+                    <button class="btn btn-outline-secondary btn-sm w-100 btn-hover-lift" id="loadTemplateBtn">
                         <i class="bi bi-folder-open me-1"></i>Load Saved Template
                     </button>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-medium">Subject</label>
-                    <input type="text" class="form-control form-control-sm" id="emailSubject" placeholder="Email subject">
-                    <small class="text-muted">Use: (company), (domain)</small>
+                    <label class="form-label fw-medium d-flex align-items-center justify-content-between">
+                        <span>
+                            <i class="bi bi-tag text-warning me-2"></i>
+                            Subject Line
+                        </span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" style="font-size: 0.875rem;">
+                                <i class="bi bi-plus-circle me-1"></i>Field
+                            </button>
+                            <ul class="dropdown-menu" id="customFieldsDropdownSubject">
+                                <li><h6 class="dropdown-header">Standard Fields</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="insertField('emailSubject', 'company'); return false;">
+                                    <i class="bi bi-building text-primary me-2"></i>(company)
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="insertField('emailSubject', 'domain'); return false;">
+                                    <i class="bi bi-link text-primary me-2"></i>(domain)
+                                </a></li>
+                                <li><hr class="dropdown-divider" id="subjectDivider" style="display:none;"></li>
+                                <li><h6 class="dropdown-header" id="subjectCustomHeader" style="display:none;">Custom Fields</h6></li>
+                            </ul>
+                        </div>
+                    </label>
+                    <input type="text" class="form-control enhanced-input" id="emailSubject" placeholder="Enter email subject...">
+                    <div class="input-helper mt-1">
+                        <i class="bi bi-info-circle text-info me-1"></i>
+                        <small class="text-muted">Use placeholders like <code>(company)</code> <code>(domain)</code> or custom fields</small>
+                    </div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-medium">Message</label>
-                    <textarea class="form-control form-control-sm" id="emailMessage" rows="6" placeholder="Hello (company)..."></textarea>
+                    <label class="form-label fw-medium d-flex align-items-center justify-content-between">
+                        <span>
+                            <i class="bi bi-chat-text text-info me-2"></i>
+                            Message Body
+                        </span>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" style="font-size: 0.875rem;">
+                                <i class="bi bi-plus-circle me-1"></i>Field
+                            </button>
+                            <ul class="dropdown-menu" id="customFieldsDropdownMessage">
+                                <li><h6 class="dropdown-header">Standard Fields</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="insertField('emailMessage', 'company'); return false;">
+                                    <i class="bi bi-building text-primary me-2"></i>(company)
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="insertField('emailMessage', 'domain'); return false;">
+                                    <i class="bi bi-link text-primary me-2"></i>(domain)
+                                </a></li>
+                                <li><hr class="dropdown-divider" id="messageDivider" style="display:none;"></li>
+                                <li><h6 class="dropdown-header" id="messageCustomHeader" style="display:none;">Custom Fields</h6></li>
+                            </ul>
+                        </div>
+                    </label>
+                    <textarea class="form-control enhanced-textarea" id="emailMessage" rows="6" placeholder="Hello (company),&#10;&#10;I noticed your website at (domain)..."></textarea>
+                    <div class="char-counter mt-1">
+                        <small class="text-muted"><span id="charCount">0</span> characters</small>
+                    </div>
                 </div>
 
                 <div class="d-grid gap-2">
-                    <button class="btn btn-outline-success btn-sm" id="saveAsTemplateBtn">
+                    <button class="btn btn-outline-success btn-sm btn-hover-lift" id="saveAsTemplateBtn">
                         <i class="bi bi-save me-1"></i>Save Template
                     </button>
-                    <button class="btn btn-success" id="applyTemplateBtn">
-                        <i class="bi bi-check-circle me-2"></i>Apply to All
+                    <button class="btn btn-success shadow-sm btn-hover-scale" id="applyTemplateBtn">
+                        <i class="bi bi-check-circle me-2"></i>Apply to All Emails
                     </button>
                 </div>
             </div>
@@ -165,79 +249,164 @@
     </div>
 
     <div class="col-lg-4">
-        <div class="card modern-card h-100">
-            <div class="card-header bg-danger text-white">
-                <h5 class="mb-0"><i class="bi bi-send me-2"></i>Step 3: Send Emails</h5>
+        <div class="card modern-card h-100 step-card">
+            <div class="card-header step-header step-3">
+                <div class="step-number">3</div>
+                <div class="step-info">
+                    <h5 class="mb-0"><i class="bi bi-send me-2"></i>Send Emails</h5>
+                    <small class="opacity-75">Configure & launch</small>
+                </div>
             </div>
             <div class="card-body">
                 <div class="mb-3">
-                    <label class="form-label fw-medium">Email Credentials</label>
-                    <div id="credentialsList"></div>
-                    <button class="btn btn-outline-primary btn-sm w-100 mt-2" data-bs-toggle="modal" data-bs-target="#credentialsModal">
-                        <i class="bi bi-plus-circle me-1"></i>Add Credentials
+                    <label class="form-label fw-medium d-flex align-items-center">
+                        <i class="bi bi-key text-danger me-2"></i>
+                        Email Credentials
+                    </label>
+                    <div id="credentialsList" class="credentials-list"></div>
+                    <button class="btn btn-outline-primary btn-sm w-100 mt-2 btn-hover-lift" data-bs-toggle="modal" data-bs-target="#credentialsModal">
+                        <i class="bi bi-plus-circle me-1"></i>Add New Credentials
                     </button>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label fw-medium">Delay Between Emails (seconds)</label>
-                    <input type="number" class="form-control" id="sendDelay" value="5" min="1" max="60">
+                    <label class="form-label fw-medium d-flex align-items-center">
+                        <i class="bi bi-clock-history text-success me-2"></i>
+                        Delay Between Emails
+                    </label>
+                    <div class="input-group">
+                        <input type="number" class="form-control enhanced-input" id="sendDelay" value="5" min="1" max="60">
+                        <span class="input-group-text">seconds</span>
+                    </div>
+                    <div class="input-helper mt-1">
+                        <i class="bi bi-info-circle text-info me-1"></i>
+                        <small class="text-muted">Recommended: 5-10 seconds to avoid spam filters</small>
+                    </div>
                 </div>
 
                 <div class="d-grid gap-2">
-                    <button class="btn btn-success btn-lg" id="startSendingBtn">
-                        <i class="bi bi-play-circle me-2"></i>Start Sending
+                    <button class="btn btn-success btn-lg shadow-sm pulse-button" id="startSendingBtn">
+                        <i class="bi bi-play-circle-fill me-2"></i>Start Sending
+                        <span class="ms-2 badge bg-white text-success" id="pendingBadge">0</span>
                     </button>
-                    <button class="btn btn-danger btn-lg" id="stopSendingBtn" style="display:none;">
-                        <i class="bi bi-stop-circle me-2"></i>Stop Sending
+                    <button class="btn btn-danger btn-lg shadow-sm" id="stopSendingBtn" style="display:none;">
+                        <i class="bi bi-stop-circle-fill me-2"></i>Stop Sending
                     </button>
                 </div>
                 
-                <div id="sendingStatus" class="mt-3" style="display:none;"></div>
+                <div id="sendingStatus" class="mt-3 status-panel" style="display:none;"></div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row g-4">
+<div class="row g-4 mt-3">
     <div class="col-12">
-        <div class="card modern-card">
-            <div class="card-header">
+        <div class="card modern-card email-list-card">
+            <div class="card-header bg-gradient-primary text-white">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-list me-2"></i>Imported Emails for Outreach</h5>
-                    <a href="{{ url_for('email_outreach_stats_page') }}" class="btn btn-sm btn-primary">
-                        <i class="bi bi-bar-chart me-1"></i>View All & Stats
-                    </a>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-envelope-paper display-6 me-3"></i>
+                        <div>
+                            <h5 class="mb-0">Imported Emails for Outreach</h5>
+                            <small class="opacity-75">Manage your email campaign recipients</small>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-light btn-sm" id="refreshEmailsBtn">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                        </button>
+                        <a href="{{ url_for('email_outreach_stats_page') }}" class="btn btn-light btn-sm">
+                            <i class="bi bi-bar-chart me-1"></i>View Stats
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="card-body p-0">
-                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
-                    <table class="table table-hover table-sm mb-0">
-                        <thead class="table-light sticky-top">
+                <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+                    <table class="table table-hover modern-table mb-0">
+                        <thead class="sticky-top">
                             <tr>
-                                <th width="5%">
-                                    <input type="checkbox" id="selectAllEmails" title="Select All">
+                                <th width="5%" class="text-center">
+                                    <div class="dropdown d-inline-block">
+                                        <button class="btn btn-link p-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" title="Selection options">
+                                            <input class="form-check-input modern-checkbox" type="checkbox" id="selectAllEmails" onclick="event.stopPropagation();">
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-start">
+                                            <li><h6 class="dropdown-header">Quick Select</h6></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="selectByStatus('all')">
+                                                <i class="bi bi-check-square text-primary me-2"></i>Toggle All
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="selectByStatus('pending')">
+                                                <i class="bi bi-clock text-warning me-2"></i>Select Pending
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="selectByStatus('sent')">
+                                                <i class="bi bi-check-circle text-success me-2"></i>Select Sent
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="selectByStatus('failed')">
+                                                <i class="bi bi-x-circle text-danger me-2"></i>Select Failed
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="javascript:void(0)" onclick="deselectAll()">
+                                                <i class="bi bi-x-square text-secondary me-2"></i>Deselect All
+                                            </a></li>
+                                        </ul>
+                                    </div>
                                 </th>
-                                <th width="30%">Email</th>
-                                <th width="25%">URL</th>
-                                <th width="25%">Subject</th>
-                                <th width="10%">Status</th>
-                                <th width="5%">Action</th>
+                                <th width="30%">
+                                    <i class="bi bi-envelope me-1 text-primary"></i>Email Address
+                                </th>
+                                <th width="25%">
+                                    <i class="bi bi-link-45deg me-1 text-info"></i>URL
+                                </th>
+                                <th width="25%">
+                                    <i class="bi bi-chat-quote me-1 text-success"></i>Subject
+                                </th>
+                                <th width="10%" class="text-center">
+                                    <i class="bi bi-check-circle me-1 text-warning"></i>Status
+                                </th>
+                                <th width="5%" class="text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="emailsTableBody">
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
-                                    <i class="bi bi-inbox display-6 d-block mb-2"></i>
-                                    No emails imported yet. Click "Import Emails" to start.
+                            <tr class="empty-state">
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="empty-state-content">
+                                        <i class="bi bi-inbox display-4 text-muted mb-3 d-block"></i>
+                                        <h5 class="text-muted">No Emails Imported Yet</h5>
+                                        <p class="text-muted mb-0">Import emails from Step 1 to start your outreach campaign</p>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer">
-                    <button class="btn btn-sm btn-danger" id="deleteSelectedBtn" style="display:none;">
-                        <i class="bi bi-trash me-1"></i>Delete Selected
-                    </button>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="d-flex gap-2 align-items-center" id="bulkActionsContainer" style="display:none !important;">
+                        <span class="text-muted fw-medium" style="font-size: 0.9rem;">Mark As:</span>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-warning btn-sm" onclick="updateSelectedEmailsStatus('pending')" title="Mark selected as pending">
+                                <i class="bi bi-clock me-1"></i>Pending
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="updateSelectedEmailsStatus('sent')" title="Mark selected as sent">
+                                <i class="bi bi-check-circle me-1"></i>Sent
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="updateSelectedEmailsStatus('failed')" title="Mark selected as failed">
+                                <i class="bi bi-x-circle me-1"></i>Failed
+                            </button>
+                        </div>
+                        <div class="vr mx-1"></div>
+                        <button class="btn btn-danger btn-sm shadow-sm" id="deleteSelectedBtn">
+                            <i class="bi bi-trash me-1"></i>Delete <span id="selectedCount" class="badge bg-white text-danger ms-1">0</span>
+                        </button>
+                    </div>
+                    <div class="text-muted small ms-auto">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <span id="totalEmailsText">0 emails ready to send</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -245,41 +414,76 @@
 </div>
 
 <div class="modal fade" id="credentialsModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Email Credentials</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modern-modal">
+            <div class="modal-header bg-gradient-primary text-white">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-key-fill display-6 me-3"></i>
+                    <div>
+                        <h5 class="modal-title mb-0">Add Email Credentials</h5>
+                        <small class="opacity-75">Configure SMTP settings for sending</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <div class="mb-3">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" class="form-control" id="credEmail" placeholder="your@email.com">
+                    <label class="form-label fw-medium d-flex align-items-center">
+                        <i class="bi bi-envelope text-primary me-2"></i>
+                        Email Address
+                    </label>
+                    <input type="email" class="form-control enhanced-input" id="credEmail" placeholder="your@email.com">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Password / App Password</label>
-                    <input type="password" class="form-control" id="credPassword">
+                    <label class="form-label fw-medium d-flex align-items-center">
+                        <i class="bi bi-shield-lock text-danger me-2"></i>
+                        Password / App Password
+                    </label>
+                    <input type="password" class="form-control enhanced-input" id="credPassword" placeholder="Enter your password">
+                    <div class="input-helper mt-1">
+                        <i class="bi bi-info-circle text-warning me-1"></i>
+                        <small class="text-muted">For Gmail, use an App Password. <a href="https://support.google.com/accounts/answer/185833" target="_blank">Learn more</a></small>
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">SMTP Server</label>
-                    <input type="text" class="form-control" id="credSmtp" placeholder="smtp.gmail.com">
-                    <small class="text-muted">Gmail: smtp.gmail.com | Outlook: smtp-mail.outlook.com</small>
+                    <label class="form-label fw-medium d-flex align-items-center">
+                        <i class="bi bi-server text-info me-2"></i>
+                        SMTP Server
+                    </label>
+                    <input type="text" class="form-control enhanced-input" id="credSmtp" placeholder="smtp.gmail.com">
+                    <div class="input-helper mt-1">
+                        <i class="bi bi-lightbulb text-warning me-1"></i>
+                        <small class="text-muted">Gmail: <code>smtp.gmail.com</code> | Outlook: <code>smtp-mail.outlook.com</code></small>
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">SMTP Port</label>
-                    <input type="number" class="form-control" id="credPort" value="587">
-                    <small class="text-muted">Usually 587 for TLS</small>
+                    <label class="form-label fw-medium d-flex align-items-center">
+                        <i class="bi bi-plug text-success me-2"></i>
+                        SMTP Port
+                    </label>
+                    <input type="number" class="form-control enhanced-input" id="credPort" value="587">
+                    <div class="input-helper mt-1">
+                        <i class="bi bi-info-circle text-info me-1"></i>
+                        <small class="text-muted">Standard ports: <code>587</code> (TLS) or <code>465</code> (SSL)</small>
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <div class="form-check">
+                    <div class="form-check modern-check">
                         <input class="form-check-input" type="checkbox" id="credDefault">
-                        <label class="form-check-label" for="credDefault">Set as default credentials</label>
+                        <label class="form-check-label" for="credDefault">
+                            <i class="bi bi-star text-warning me-1"></i>
+                            Set as default credentials
+                        </label>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveCredentialsBtn">Save Credentials</button>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary shadow-sm btn-hover-scale" id="saveCredentialsBtn">
+                    <i class="bi bi-check-circle me-1"></i>Save Credentials
+                </button>
             </div>
         </div>
     </div>
@@ -319,6 +523,45 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="csvMappingModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-primary text-white">
+                <div>
+                    <h5 class="modal-title mb-0"><i class="bi bi-diagram-3 me-2"></i>Map CSV Columns</h5>
+                    <small class="opacity-75">Match your CSV columns to email fields</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-info mb-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Email</strong> column is required. Map other columns as custom fields to use in templates with <code>(fieldname)</code>
+                </div>
+                
+                <div id="mappingFields" class="mb-4"></div>
+                
+                <div class="card bg-light">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-eye me-2"></i>Preview (First 3 Rows)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="previewTable" class="table-responsive"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="confirmMappingBtn">
+                    <i class="bi bi-check-circle me-2"></i>Import with Mapping
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -335,6 +578,18 @@ document.addEventListener('DOMContentLoaded', function() {
     loadImportedEmails();
     startStatusPolling();
     
+    // Add refresh button handler
+    document.getElementById('refreshEmailsBtn').addEventListener('click', function() {
+        const icon = this.querySelector('i');
+        icon.classList.add('bi-arrow-clockwise');
+        icon.style.animation = 'spin 1s linear';
+        loadImportedEmails();
+        updateStatsCards();
+        setTimeout(() => {
+            icon.style.animation = '';
+        }, 1000);
+    });
+    
     // Toggle import source options
     document.getElementById('importSource').addEventListener('change', function() {
         const extractedOptions = document.getElementById('extractedOptions');
@@ -346,6 +601,17 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             extractedOptions.style.display = 'block';
             fileUploadOptions.style.display = 'none';
+        }
+    });
+    
+    // File input change handler to show selected filename
+    document.getElementById('emailFile').addEventListener('change', function() {
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        if (this.files.length > 0) {
+            fileNameDisplay.textContent = '📄 ' + this.files[0].name;
+            fileNameDisplay.style.display = 'block';
+        } else {
+            fileNameDisplay.style.display = 'none';
         }
     });
     
@@ -378,18 +644,20 @@ function loadCredentials() {
             
             data.credentials.forEach(cred => {
                 const div = document.createElement('div');
-                div.className = 'credential-item p-2 mb-2 border rounded bg-light';
+                div.className = 'credential-item p-3 mb-3 border rounded ' + (cred.is_default ? 'border-success bg-success bg-opacity-10' : 'bg-light');
                 div.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div style="font-size: 0.85rem;">
-                            <strong>${cred.email}</strong>
-                            ${cred.is_default ? '<span class="badge bg-success ms-1">Default</span>' : ''}
-                            <br><small class="text-muted">${cred.smtp_server}</small>
+                    <div class="d-flex justify-content-between align-items-start" style="gap: 1rem;">
+                        <div class="flex-grow-1" style="min-width: 0;">
+                            <div class="d-flex align-items-center mb-2 flex-wrap" style="gap: 0.5rem;">
+                                <strong style="font-size: 0.95rem; word-break: break-word;">${cred.email}</strong>
+                                ${cred.is_default ? '<span class="badge bg-success" style="font-size: 0.7rem; padding: 3px 10px;">Default</span>' : ''}
+                            </div>
+                            <small class="text-muted d-block mb-2">${cred.smtp_server}</small>
+                            ${!cred.is_default ? `<button class="btn btn-sm btn-outline-primary" onclick="setDefaultCredentials(${cred.id})" title="Set as default"><i class="bi bi-star me-1"></i>Set Default</button>` : ''}
                         </div>
-                        <div>
-                            ${!cred.is_default ? `<button class="btn btn-sm btn-outline-primary" onclick="setDefaultCredentials(${cred.id})" title="Set as default"><i class="bi bi-star"></i></button>` : ''}
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCredentials(${cred.id})" title="Delete"><i class="bi bi-trash"></i></button>
-                        </div>
+                        <button class="btn btn-sm btn-outline-danger flex-shrink-0" onclick="deleteCredentials(${cred.id})" title="Delete" style="margin-left: auto;">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
                 `;
                 list.appendChild(div);
@@ -397,7 +665,43 @@ function loadCredentials() {
         });
 }
 
+function updateStatsCards() {
+    fetch('/email-outreach/get-emails?limit=1000')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.emails) {
+                const total = data.emails.length;
+                const pending = data.emails.filter(e => e.status === 'pending').length;
+                const sent = data.emails.filter(e => e.status === 'sent').length;
+                const failed = data.emails.filter(e => e.status === 'failed').length;
+                
+                // Update stats cards
+                document.querySelector('.gradient-card-blue h3').textContent = total;
+                document.querySelector('.gradient-card-orange h3').textContent = pending;
+                document.querySelector('.gradient-card-green h3').textContent = sent;
+                document.querySelector('.gradient-card-purple h3').textContent = failed;
+                
+                // Update pending badge on start button
+                const pendingBadge = document.getElementById('pendingBadge');
+                if (pendingBadge) {
+                    pendingBadge.textContent = pending;
+                }
+                
+                // Update total emails text
+                const totalEmailsText = document.getElementById('totalEmailsText');
+                if (totalEmailsText) {
+                    totalEmailsText.textContent = `${total} emails ready to send`;
+                }
+            }
+        })
+        .catch(err => console.error('Error updating stats:', err));
+}
+
 function loadImportedEmails() {
+    // Save current checkbox states before refresh
+    const selectedIds = Array.from(document.querySelectorAll('.email-checkbox:checked')).map(cb => parseInt(cb.value));
+    const selectAllChecked = document.getElementById('selectAllEmails').checked;
+    
     fetch('/email-outreach/get-emails?limit=100')
         .then(r => r.json())
         .then(data => {
@@ -424,7 +728,24 @@ function loadImportedEmails() {
                     <td><small>${email.email}</small></td>
                     <td><small>${email.url || '-'}</small></td>
                     <td><small>${email.subject ? (email.subject.substring(0, 30) + (email.subject.length > 30 ? '...' : '')) : '-'}</small></td>
-                    <td>${statusBadge}</td>
+                    <td>
+                        <div class="dropdown d-inline-block">
+                            <button class="btn btn-sm ${email.status === 'pending' ? 'btn-warning' : email.status === 'sent' ? 'btn-success' : 'btn-danger'} dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true">
+                                ${email.status === 'pending' ? 'Pending' : email.status === 'sent' ? 'Sent' : 'Failed'}
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="updateEmailStatus(${email.id}, 'pending')">
+                                    <i class="bi bi-clock text-warning me-2"></i>Mark as Pending
+                                </a></li>
+                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="updateEmailStatus(${email.id}, 'sent')">
+                                    <i class="bi bi-check-circle text-success me-2"></i>Mark as Sent
+                                </a></li>
+                                <li><a class="dropdown-item" href="javascript:void(0)" onclick="updateEmailStatus(${email.id}, 'failed')">
+                                    <i class="bi bi-x-circle text-danger me-2"></i>Mark as Failed
+                                </a></li>
+                            </ul>
+                        </div>
+                    </td>
                     <td>
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteSingleEmail(${email.id})" title="Delete">
                             <i class="bi bi-trash"></i>
@@ -434,7 +755,15 @@ function loadImportedEmails() {
                 tbody.appendChild(row);
             });
             
+            // Restore checkbox states
+            selectedIds.forEach(id => {
+                const checkbox = document.querySelector(`.email-checkbox[value="${id}"]`);
+                if (checkbox) checkbox.checked = true;
+            });
+            document.getElementById('selectAllEmails').checked = selectAllChecked;
+            
             updateDeleteButtonVisibility();
+            updateStatsCards(); // Update stats after loading emails
         })
         .catch(err => {
             console.error('Error loading emails:', err);
@@ -445,8 +774,112 @@ function loadImportedEmails() {
 
 function updateDeleteButtonVisibility() {
     const checkboxes = document.querySelectorAll('.email-checkbox:checked');
-    const deleteBtn = document.getElementById('deleteSelectedBtn');
-    deleteBtn.style.display = checkboxes.length > 0 ? 'inline-block' : 'none';
+    const bulkActionsContainer = document.getElementById('bulkActionsContainer');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    if (checkboxes.length > 0) {
+        bulkActionsContainer.style.display = 'flex';
+        bulkActionsContainer.style.removeProperty('display');
+        bulkActionsContainer.style.setProperty('display', 'flex', 'important');
+    } else {
+        bulkActionsContainer.style.display = 'none';
+        bulkActionsContainer.style.setProperty('display', 'none', 'important');
+    }
+    
+    if (selectedCount) {
+        selectedCount.textContent = checkboxes.length;
+    }
+}
+
+function updateEmailStatus(emailId, newStatus) {
+    // Close all dropdowns immediately
+    const dropdowns = document.querySelectorAll('.dropdown-menu.show');
+    dropdowns.forEach(dd => {
+        const dropdown = bootstrap.Dropdown.getInstance(dd.previousElementSibling);
+        if (dropdown) dropdown.hide();
+    });
+    
+    fetch('/email-outreach/update-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [emailId], status: newStatus })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(`Status updated to ${newStatus}`, 'success');
+            // Delay refresh slightly to avoid conflict
+            setTimeout(() => {
+                loadImportedEmails();
+                updateStatsCards();
+            }, 200);
+        } else {
+            showNotification('Failed to update status', 'error');
+        }
+    });
+}
+
+function selectByStatus(status) {
+    const allCheckboxes = document.querySelectorAll('.email-checkbox');
+    const selectAllCheckbox = document.getElementById('selectAllEmails');
+    
+    if (status === 'all') {
+        const allChecked = selectAllCheckbox.checked;
+        allCheckboxes.forEach(cb => cb.checked = !allChecked);
+        selectAllCheckbox.checked = !allChecked;
+    } else {
+        // Get all rows and check those matching the status
+        allCheckboxes.forEach(cb => {
+            const row = cb.closest('tr');
+            const statusCell = row.querySelector('td:nth-child(5)');
+            const statusButton = statusCell ? statusCell.querySelector('button') : null;
+            
+            if (statusButton) {
+                const buttonText = statusButton.textContent.trim().toLowerCase();
+                if (buttonText === status) {
+                    cb.checked = true;
+                }
+            }
+        });
+        selectAllCheckbox.checked = false;
+    }
+    
+    updateDeleteButtonVisibility();
+}
+
+function deselectAll() {
+    const allCheckboxes = document.querySelectorAll('.email-checkbox');
+    const selectAllCheckbox = document.getElementById('selectAllEmails');
+    
+    allCheckboxes.forEach(cb => cb.checked = false);
+    selectAllCheckbox.checked = false;
+    
+    updateDeleteButtonVisibility();
+}
+
+function updateSelectedEmailsStatus(newStatus) {
+    const checkboxes = document.querySelectorAll('.email-checkbox:checked');
+    const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    
+    if (ids.length === 0) {
+        showNotification('No emails selected', 'error');
+        return;
+    }
+    
+    fetch('/email-outreach/update-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: ids, status: newStatus })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(`${data.count} email(s) marked as ${newStatus}`, 'success');
+            document.getElementById('selectAllEmails').checked = false;
+            loadImportedEmails();
+            updateStatsCards();
+        }
+    });
 }
 
 function deleteSingleEmail(emailId) {
@@ -670,7 +1103,7 @@ document.getElementById('importEmailsBtn').addEventListener('click', function() 
     this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Importing...';
     
     if (importSource === 'file') {
-        // Handle file upload
+        // Handle file upload - show mapping modal
         const fileInput = document.getElementById('emailFile');
         const file = fileInput.files[0];
         
@@ -684,21 +1117,20 @@ document.getElementById('importEmailsBtn').addEventListener('click', function() 
         const formData = new FormData();
         formData.append('email_file', file);
         
-        fetch('/email-outreach/import-from-file', {
+        fetch('/email-outreach/preview-csv', {
             method: 'POST',
             body: formData
         })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                showNotification(data.message, 'success');
-                setTimeout(() => location.reload(), 1500);
+                showCSVMappingModal(data.columns, data.preview, file);
             } else {
-                showNotification(data.message || 'Import failed', 'error');
+                showNotification(data.message || 'Preview failed', 'error');
             }
         })
         .catch(err => {
-            showNotification('Error uploading file: ' + err.message, 'error');
+            showNotification('Error reading file: ' + err.message, 'error');
         })
         .finally(() => {
             this.disabled = false;
@@ -706,7 +1138,8 @@ document.getElementById('importEmailsBtn').addEventListener('click', function() 
         });
     } else {
         // Handle extracted emails import
-        const oneEmailPerUrl = document.getElementById('onePerUrl').checked;
+        const selectionMode = document.getElementById('emailSelectionMode').value;
+        const oneEmailPerUrl = (selectionMode === 'one');
         
         fetch('/email-outreach/import-emails', {
             method: 'POST',
@@ -766,17 +1199,43 @@ document.getElementById('applyTemplateBtn').addEventListener('click', function()
 
 document.getElementById('startSendingBtn').addEventListener('click', function() {
     const delay = document.getElementById('sendDelay').value;
+    const subject = document.getElementById('emailSubject').value;
+    const message = document.getElementById('emailMessage').value;
     
-    fetch('/email-outreach/start-sending', {
+    // Check if template is filled
+    if (!subject || !message) {
+        showNotification('Please enter email subject and message in Step 2 before sending', 'error');
+        return;
+    }
+    
+    // Auto-apply template to all pending emails before sending
+    showNotification('Applying template to all pending emails...', 'info');
+    
+    fetch('/email-outreach/update-template', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            email_ids: [],
-            delay_seconds: parseInt(delay)
-        })
+        body: JSON.stringify({ subject, message })
     })
     .then(r => r.json())
     .then(data => {
+        if (!data.success) {
+            showNotification('Failed to apply template', 'error');
+            return;
+        }
+        
+        // Now start sending
+        return fetch('/email-outreach/start-sending', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                email_ids: [],
+                delay_seconds: parseInt(delay)
+            })
+        });
+    })
+    .then(r => r ? r.json() : null)
+    .then(data => {
+        if (!data) return;
         if (data.success) {
             showNotification('Email sending started', 'success');
             document.getElementById('startSendingBtn').style.display = 'none';
@@ -801,7 +1260,21 @@ document.getElementById('stopSendingBtn').addEventListener('click', function() {
 });
 
 function startStatusPolling() {
+    // Clear any existing interval first
+    if (sendingInterval) {
+        clearInterval(sendingInterval);
+    }
+    
+    let lastSentCount = 0;
+    let lastFailedCount = 0;
+    
     sendingInterval = setInterval(() => {
+        // Don't refresh if a dropdown is open
+        const openDropdown = document.querySelector('.dropdown-menu.show');
+        if (openDropdown) {
+            return; // Skip this poll cycle
+        }
+        
         fetch('/email-outreach/stats')
             .then(r => r.json())
             .then(data => {
@@ -823,10 +1296,24 @@ function startStatusPolling() {
                     `;
                     document.getElementById('startSendingBtn').style.display = 'none';
                     document.getElementById('stopSendingBtn').style.display = 'block';
+                    
+                    // Update stats cards in real-time
+                    updateStatsCards();
+                    
+                    // Refresh email list if count changed (email sent or failed)
+                    if (data.sent !== lastSentCount || data.failed !== lastFailedCount) {
+                        loadImportedEmails();
+                        lastSentCount = data.sent;
+                        lastFailedCount = data.failed;
+                    }
                 } else {
                     statusDiv.style.display = 'none';
                     document.getElementById('startSendingBtn').style.display = 'block';
                     document.getElementById('stopSendingBtn').style.display = 'none';
+                    
+                    // Final refresh when sending completes
+                    updateStatsCards();
+                    loadImportedEmails();
                 }
             });
     }, 2000);
@@ -864,7 +1351,7 @@ function showNotification(message, type) {
 }
 
 function downloadSampleCSV() {
-    const csvContent = "Email,URL\njohn@example.com,example.com\njane@company.com,company.com\ncontact@test.com,test.com";
+    const csvContent = "Email,URL,Name,Company\njohn@example.com,example.com,John Doe,Acme Corp\njane@company.com,company.com,Jane Smith,Tech Inc\ncontact@test.com,test.com,Bob Johnson,Test LLC";
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -874,8 +1361,256 @@ function downloadSampleCSV() {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    showNotification('Sample CSV downloaded', 'success');
+    showNotification('Sample CSV downloaded with custom fields', 'success');
 }
+
+let csvMappingModal;
+let currentCSVFile = null;
+let currentCSVColumns = [];
+let currentCSVPreview = [];
+let availableCustomFields = [];
+
+function showCSVMappingModal(columns, preview, file) {
+    if (!csvMappingModal) {
+        csvMappingModal = new bootstrap.Modal(document.getElementById('csvMappingModal'));
+    }
+    
+    currentCSVFile = file;
+    currentCSVColumns = columns;
+    currentCSVPreview = preview;
+    
+    // Build mapping fields
+    const mappingDiv = document.getElementById('mappingFields');
+    mappingDiv.innerHTML = '';
+    
+    // Email field (required)
+    mappingDiv.innerHTML += `
+        <div class="mb-3">
+            <label class="form-label fw-bold text-danger">
+                <i class="bi bi-envelope me-2"></i>Email Column *
+            </label>
+            <select class="form-select" id="map_email" required>
+                <option value="">-- Select Column --</option>
+                ${columns.map(col => `<option value="${col}" ${col.toLowerCase().includes('email') ? 'selected' : ''}>${col}</option>`).join('')}
+            </select>
+        </div>
+    `;
+    
+    // URL field (optional)
+    mappingDiv.innerHTML += `
+        <div class="mb-3">
+            <label class="form-label fw-bold">
+                <i class="bi bi-link-45deg me-2"></i>URL/Domain Column (Optional)
+            </label>
+            <select class="form-select" id="map_url">
+                <option value="">-- Skip --</option>
+                ${columns.map(col => `<option value="${col}" ${(col.toLowerCase().includes('url') || col.toLowerCase().includes('domain') || col.toLowerCase().includes('website')) ? 'selected' : ''}>${col}</option>`).join('')}
+            </select>
+        </div>
+    `;
+    
+    // Custom fields section
+    mappingDiv.innerHTML += '<hr><h6 class="text-primary"><i class="bi bi-star me-2"></i>Custom Fields (Use in templates as <code>(fieldname)</code>)</h6>';
+    
+    columns.forEach(col => {
+        const fieldName = col.toLowerCase().replace(/[^a-z0-9]/g, '');
+        mappingDiv.innerHTML += `
+            <div class="mb-3">
+                <label class="form-label">
+                    <i class="bi bi-tag me-2"></i>${col}
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">Map as:</span>
+                    <input type="text" class="form-control" id="custom_${col}" value="${fieldName}" placeholder="e.g., name, company, title">
+                    <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('custom_${col}').value=''">
+                        <i class="bi bi-x"></i> Skip
+                    </button>
+                </div>
+                <small class="text-muted">Use <code>(${fieldName})</code> in your template</small>
+            </div>
+        `;
+    });
+    
+    // Show preview
+    updateMappingPreview();
+    
+    csvMappingModal.show();
+}
+
+function updateMappingPreview() {
+    const previewDiv = document.getElementById('previewTable');
+    
+    if (currentCSVPreview.length === 0) {
+        previewDiv.innerHTML = '<p class="text-muted">No preview available</p>';
+        return;
+    }
+    
+    let html = '<table class="table table-sm table-bordered"><thead class="table-light"><tr>';
+    currentCSVColumns.forEach(col => {
+        html += `<th>${col}</th>`;
+    });
+    html += '</tr></thead><tbody>';
+    
+    currentCSVPreview.slice(0, 3).forEach(row => {
+        html += '<tr>';
+        currentCSVColumns.forEach(col => {
+            html += `<td>${row[col] || ''}</td>`;
+        });
+        html += '</tr>';
+    });
+    
+    html += '</tbody></table>';
+    previewDiv.innerHTML = html;
+}
+
+document.getElementById('confirmMappingBtn').addEventListener('click', function() {
+    const emailCol = document.getElementById('map_email').value;
+    if (!emailCol) {
+        showNotification('Please select an email column', 'error');
+        return;
+    }
+    
+    // Build mapping object
+    const mapping = {
+        email: emailCol,
+        url: document.getElementById('map_url').value || ''
+    };
+    
+    // Add custom fields
+    currentCSVColumns.forEach(col => {
+        const customField = document.getElementById(`custom_${col}`);
+        if (customField && customField.value) {
+            mapping[customField.value] = col;
+        }
+    });
+    
+    // Read file as base64
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const base64Data = btoa(e.target.result);
+        const fileType = currentCSVFile.name.endsWith('.xlsx') || currentCSVFile.name.endsWith('.xls') ? 'xlsx' : 'csv';
+        
+        // Send to backend
+        this.disabled = true;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Importing...';
+        
+        fetch('/email-outreach/import-with-mapping', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mapping: mapping,
+                file_data: base64Data,
+                file_type: fileType
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                csvMappingModal.hide();
+                
+                // Update custom fields dropdowns with new fields
+                const customFields = Object.keys(mapping).filter(k => k !== 'email' && k !== 'url' && mapping[k]);
+                if (customFields.length > 0) {
+                    updateCustomFieldsDropdowns(customFields);
+                }
+                
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message || 'Import failed', 'error');
+            }
+        })
+        .catch(err => {
+            showNotification('Error importing: ' + err.message, 'error');
+        })
+        .finally(() => {
+            this.disabled = false;
+            this.innerHTML = '<i class="bi bi-check-circle me-2"></i>Import with Mapping';
+        });
+    };
+    
+    reader.readAsBinaryString(currentCSVFile);
+});
+
+function insertField(elementId, fieldName) {
+    const element = document.getElementById(elementId);
+    const cursorPos = element.selectionStart;
+    const textBefore = element.value.substring(0, cursorPos);
+    const textAfter = element.value.substring(cursorPos);
+    
+    element.value = textBefore + `(${fieldName})` + textAfter;
+    
+    // Set cursor position after inserted field
+    const newPos = cursorPos + fieldName.length + 2;
+    element.setSelectionRange(newPos, newPos);
+    element.focus();
+    
+    // Update char count if it's the message field
+    if (elementId === 'emailMessage') {
+        document.getElementById('charCount').textContent = element.value.length;
+    }
+}
+
+function updateCustomFieldsDropdowns(customFields) {
+    availableCustomFields = customFields;
+    
+    const dropdownSubject = document.getElementById('customFieldsDropdownSubject');
+    const dropdownMessage = document.getElementById('customFieldsDropdownMessage');
+    
+    if (customFields.length === 0) {
+        // Hide custom fields section
+        document.getElementById('subjectDivider').style.display = 'none';
+        document.getElementById('subjectCustomHeader').style.display = 'none';
+        document.getElementById('messageDivider').style.display = 'none';
+        document.getElementById('messageCustomHeader').style.display = 'none';
+        return;
+    }
+    
+    // Show custom fields section
+    document.getElementById('subjectDivider').style.display = 'block';
+    document.getElementById('subjectCustomHeader').style.display = 'block';
+    document.getElementById('messageDivider').style.display = 'block';
+    document.getElementById('messageCustomHeader').style.display = 'block';
+    
+    // Build custom fields HTML for subject
+    let customHtml = '';
+    customFields.forEach(field => {
+        customHtml += `<li><a class="dropdown-item" href="#" onclick="insertField('emailSubject', '${field}'); return false;">
+            <i class="bi bi-star-fill text-success me-2"></i>(${field})
+        </a></li>`;
+    });
+    
+    // Insert after the custom header for subject
+    const subjectHeader = document.getElementById('subjectCustomHeader');
+    subjectHeader.insertAdjacentHTML('afterend', customHtml);
+    
+    // Build custom fields HTML for message
+    customHtml = '';
+    customFields.forEach(field => {
+        customHtml += `<li><a class="dropdown-item" href="#" onclick="insertField('emailMessage', '${field}'); return false;">
+            <i class="bi bi-star-fill text-success me-2"></i>(${field})
+        </a></li>`;
+    });
+    
+    // Insert after the custom header for message
+    const messageHeader = document.getElementById('messageCustomHeader');
+    messageHeader.insertAdjacentHTML('afterend', customHtml);
+}
+
+// Check if there are imported emails with custom fields on page load
+function checkForCustomFields() {
+    fetch('/email-outreach/get-custom-fields')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.custom_fields.length > 0) {
+                updateCustomFieldsDropdowns(data.custom_fields);
+            }
+        })
+        .catch(err => console.error('Error loading custom fields:', err));
+}
+
+// Call on page load
+setTimeout(checkForCustomFields, 1000);
 </script>
 
 <style>
@@ -886,10 +1621,46 @@ function downloadSampleCSV() {
 .stat-icon { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
 .modern-card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease; }
 .modern-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
-.credential-item { transition: all 0.2s ease; }
-.credential-item:hover { background: #e9ecef !important; }
+.credential-item { transition: all 0.2s ease; border-radius: 8px !important; }
+.credential-item:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important; }
+.credential-item.border-success { border-width: 2px !important; }
 .template-item { background: #f8f9fa; transition: all 0.2s ease; cursor: pointer; }
 .template-item:hover { background: #e9ecef; }
 .sticky-top { position: sticky; top: 0; z-index: 10; }
+.enhanced-select { border: 2px solid #e9ecef; border-radius: 8px; padding: 0.6rem; }
+.enhanced-select:focus { border-color: #0d6efd; box-shadow: 0 0 0 0.2rem rgba(13,110,253,.15); }
+.input-helper { font-size: 0.8rem; }
+.dropdown-menu { border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border: 1px solid #e9ecef; }
+.dropdown-item { padding: 0.5rem 1rem; font-size: 0.9rem; }
+.dropdown-item:hover { background-color: #f8f9fa; }
+.dropdown-header { font-size: 0.75rem; font-weight: 600; color: #6c757d; padding: 0.5rem 1rem; }
+code { background: #f8f9fa; padding: 2px 6px; border-radius: 4px; font-size: 0.875rem; color: #e83e8c; }
+.custom-file-upload { margin-top: 0.5rem; }
+.file-upload-label { 
+    display: block; 
+    border: 2px dashed #0d6efd; 
+    border-radius: 12px; 
+    padding: 2rem 1rem; 
+    text-align: center; 
+    cursor: pointer; 
+    background: #f8f9ff;
+    transition: all 0.3s ease;
+}
+.file-upload-label:hover { 
+    background: #e7f1ff; 
+    border-color: #0a58ca;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(13,110,253,0.15);
+}
+.file-upload-content { 
+    pointer-events: none; 
+}
+#fileNameDisplay {
+    font-weight: 500;
+    padding: 0.5rem;
+    background: #d1e7dd;
+    border-radius: 6px;
+    display: inline-block;
+}
 </style>
 {% endblock %}

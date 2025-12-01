@@ -11,17 +11,19 @@ A comprehensive Flask-based web application for automating backlink building, em
 - Archive and manage URL data
 
 ### 2. **Email Outreach System**
-- Import emails from CSV/Excel files or extracted sources
+- Import emails from CSV/Excel files or extracted sources with custom field mapping
 - Create and save email templates with variable substitution
-- Automated email sending with configurable delays
-- Track email status (pending, sent, failed)
+- Custom CSV columns support - map any field and use in templates
+- Automated email sending with configurable delays and SMTP connection pooling
+- Track email status (pending, sent, failed) with bulk actions
 - SMTP integration with multiple credential support
+- Real-time sending progress with auto-reconnection on failures
 
 ### 3. **Email Extraction**
-- Selenium-based web scraping for email discovery
+- Selenium-based web scraping for email discovery with improved error handling
 - Extract emails from contact pages and website content
 - Hunter.io API integration for domain-based email search
-- Bulk URL processing with progress tracking
+- Bulk URL processing with progress tracking and detailed logging
 
 ### 4. **Web Scrapers**
 - **Adsy Scraper**: Automated login and data extraction
@@ -198,24 +200,106 @@ merged_app/
 
 ### Email Outreach Workflow
 
-1. **Import Emails**
-   - Upload CSV/Excel file with "Email" and "URL" columns
-   - Or import from extracted emails database
+#### Step 1: Import Emails
 
-2. **Create Template**
-   - Design email subject and body
-   - Use variables: `(company)`, `(domain)`
-   - Save templates for reuse
+**Option A: From Extracted Emails**
+1. Select "From Extracted Emails" as import source
+2. Choose selection mode:
+   - Best Email Per URL (Recommended) - One quality email per domain
+   - All Emails Per URL - Import all discovered emails
+3. Click "Import Emails"
 
-3. **Configure SMTP**
-   - Add email credentials (Gmail, Outlook, etc.)
-   - For Gmail: Use App Passwords (not regular password)
-   - Set as default for automatic selection
+**Option B: Upload CSV/Excel with Custom Fields**
+1. Select "Upload CSV/Excel File" as import source
+2. Click "Choose file" or drag and drop your file
+3. CSV Mapping Modal will appear:
+   - Map required "Email" column
+   - Optionally map "URL" column
+   - Map custom fields (Name, Company, Position, etc.)
+4. Preview shows first 3 rows of your data
+5. Click "Import with Mapping"
 
-4. **Send Emails**
-   - Set delay between emails (recommended: 5-10 seconds)
+**Supported CSV Format:**
+```csv
+Email,URL,Name,Company,Position
+john@example.com,example.com,John Doe,Acme Corp,Marketing Director
+```
+
+See `examples/sample_csv_import.csv` for reference.
+
+#### Step 2: Create Email Template
+
+1. **Subject Line:**
+   - Enter your email subject
+   - Click "Field" dropdown to insert variables
+   - Standard fields: `(company)`, `(domain)`
+   - Custom fields: `(name)`, `(position)`, or any field you mapped
+
+2. **Message Body:**
+   - Write your email message
+   - Use "Field" dropdown to insert placeholders
+   - Custom fields will auto-populate from your CSV data
+
+**Example Template:**
+```
+Subject: Partnership Opportunity for (company)
+
+Hi (name),
+
+I came across (company) at (domain) and was impressed by your work as (position).
+
+Would you be interested in exploring a collaboration?
+
+Best regards,
+Your Name
+```
+
+See `examples/email_template_example.txt` for more examples.
+
+3. **Save Template:**
+   - Click "Save Template" to reuse later
+   - Click "Load Saved Template" to restore previous templates
+
+4. **Apply to All:**
+   - Click "Apply to All Emails" to update all pending emails with current template
+
+#### Step 3: Configure SMTP & Send
+
+1. **Add Email Credentials:**
+   - Click "Add New Credentials"
+   - Enter email, password (use App Password for Gmail)
+   - SMTP Server: `smtp.gmail.com` (Gmail) or `smtp-mail.outlook.com` (Outlook)
+   - SMTP Port: `587` (TLS) or `465` (SSL)
+   - Check "Set as default" for automatic selection
+
+2. **Set Sending Delay:**
+   - Recommended: 5-10 seconds between emails
+   - Prevents spam filters and rate limiting
+
+3. **Start Sending:**
    - Click "Start Sending" to begin campaign
-   - Monitor progress in real-time
+   - Monitor real-time progress (sent/failed counts)
+   - Auto-reconnects on connection failures
+   - Click "Stop Sending" to pause campaign
+
+#### Managing Imported Emails
+
+**Bulk Actions:**
+- Select emails using checkboxes
+- Quick select dropdown for all/pending/sent/failed
+- Mark selected as: Pending, Sent, or Failed
+- Delete selected emails
+
+**Individual Actions:**
+- Click status dropdown to update single email
+- Delete individual emails
+- View email details in table
+
+**Statistics Cards:**
+- Total Emails: All imported emails
+- Pending: Ready to send
+- Sent: Successfully delivered
+- Failed: Errors during sending
 
 ### Email Extraction
 
@@ -254,12 +338,22 @@ The application uses SQLite by default. Database models include:
 - **URL**: Target URLs for processing
 - **URLData**: Ahrefs metrics and data
 - **ExtractedEmail**: Discovered email addresses
-- **EmailOutreach**: Outreach campaign emails
-- **EmailCredentials**: SMTP credentials
+- **EmailOutreach**: Outreach campaign emails with custom_fields JSON column
+- **EmailCredentials**: SMTP credentials with default flag
 - **EmailTemplate**: Saved email templates
 - **SuppressionList**: URLs to exclude
 - **OutreachData**: Outreach campaign results
 - **ScrapedData**: Web scraping results
+
+### Database Migration
+
+If upgrading from an older version, run the migration script to add custom fields support:
+
+```bash
+python migrate_add_custom_fields.py
+```
+
+This adds the `custom_fields` column to the `email_outreach` table for storing CSV custom field data.
 
 ## Important Security Notes
 
@@ -289,20 +383,39 @@ This project uses `.example` template files to protect sensitive credentials:
 5. **Regular backups** of your database
 6. **Always copy from `.example` files** rather than modifying them directly
 
+## Example Files
+
+The `examples/` directory contains sample files to help you get started:
+
+- **sample_csv_import.csv**: Example CSV with custom fields (Email, URL, Name, Company, Position)
+- **sample_urls_import.txt**: Plain text list of URLs for email extraction
+- **email_template_example.txt**: Sample email template using custom field placeholders
+- **custom_fields_mapping.json**: Guide for CSV column mapping and template usage
+
 ## Troubleshooting
 
 ### Chrome Driver Issues
 - The app uses `webdriver-manager` to auto-install ChromeDriver
 - Ensure Chrome/Chromium browser is installed
+- Check Chrome version compatibility
 
 ### Gmail Authentication Errors
 - Verify 2-Step Verification is enabled
 - Use App Password, not regular password
 - Check SMTP settings (server: smtp.gmail.com, port: 587)
+- Ensure "Less secure app access" is NOT required (use App Passwords instead)
+
+### Email Sending Issues
+- Connection timeouts: System auto-reconnects after 50 emails or on connection failure
+- Rate limiting: Increase delay between emails (10-15 seconds)
+- Authentication failures: Verify SMTP credentials are correct
+- Check sent/failed counts in real-time status panel
 
 ### Import Errors
 - Ensure CSV/Excel files have proper column headers
 - Check file encoding (UTF-8 recommended)
+- Verify "Email" column exists (required)
+- For custom fields, use simple alphanumeric names without special characters
 
 ## License
 
@@ -331,4 +444,36 @@ For issues and questions, please open an issue on GitHub.
 
 ---
 
-**Built with ❤️ for SEO professionals and digital marketers**
+## Recent Updates
+
+### Version 2.0 - Custom Fields & Enhanced Email Outreach
+
+**New Features:**
+- CSV column mapping modal for importing custom fields
+- Dynamic field insertion dropdowns in email templates
+- Support for unlimited custom placeholders beyond company/domain
+- SMTP connection pooling with auto-reconnection
+- Retry logic for failed emails (3 attempts)
+- Bulk email status management
+- Enhanced UI with modern card designs and animations
+- Real-time statistics updates during sending
+- Improved file upload interface with drag-and-drop styling
+- Character counter for email messages
+- Quick select options for email filtering
+
+**Improvements:**
+- Email extraction with detailed logging and error handling
+- Hunter.io integration with proper error messages
+- Selenium WebDriver improvements with longer timeouts
+- Database migration script for custom_fields column
+- Enhanced credentials display with better spacing
+- Status dropdown for individual email management
+- Comprehensive example files and documentation
+
+**Bug Fixes:**
+- Fixed database column missing error for custom_fields
+- Resolved UI spacing issues in credentials section
+- Fixed dropdown conflicts during status updates
+- Improved error handling across all modules
+
+Built for SEO professionals and digital marketers

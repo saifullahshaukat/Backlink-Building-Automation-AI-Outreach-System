@@ -891,3 +891,435 @@ body {
         padding: 1rem;
     }
 }
+
+/* ============================================
+   Email Outreach Enhanced Styles
+   ============================================ */
+
+/* Step Cards */
+.step-card {
+    transition: box-shadow 0.3s ease;
+}
+
+.step-header {
+    position: relative;
+    padding: 1.25rem 1.5rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.step-1 {
+    background: var(--gradient-primary);
+}
+
+.step-2 {
+    background: var(--gradient-success);
+}
+
+.step-3 {
+    background: var(--gradient-danger);
+}
+
+.step-number {
+    width: 42px;
+    height: 42px;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.step-info h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.step-info small {
+    font-size: 0.8rem;
+    opacity: 0.85;
+}
+
+/* Enhanced Form Controls */
+.enhanced-select,
+.enhanced-input,
+.enhanced-textarea {
+    border: 2px solid #e1e4e8;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.enhanced-select:focus,
+.enhanced-input:focus,
+.enhanced-textarea:focus {
+    border-color: var(--sidebar-active);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+}
+
+.enhanced-textarea {
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* Button Animations */
+.btn-hover-lift,
+.btn-hover-scale,
+.pulse-button {
+    /* Animations removed */
+}
+
+/* Preview Card */
+.preview-card {
+    background: rgba(9, 105, 218, 0.05);
+    border: 2px dashed rgba(9, 105, 218, 0.3);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: var(--sidebar-active);
+}
+
+.preview-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.preview-list li {
+    padding: 0.5rem;
+    background: white;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.preview-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* File Upload Wrapper */
+.file-upload-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+.file-upload-wrapper input[type="file"] {
+    cursor: pointer;
+}
+
+/* Input Helper Text */
+.input-helper {
+    display: flex;
+    align-items: start;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+}
+
+.input-helper small {
+    line-height: 1.4;
+}
+
+.input-helper code {
+    background: rgba(175, 184, 193, 0.2);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+/* Credentials List */
+.credentials-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.credential-item {
+    padding: 0.75rem;
+    background: rgba(9, 105, 218, 0.05);
+    border: 1px solid rgba(9, 105, 218, 0.2);
+    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.credential-item:hover {
+    background: rgba(9, 105, 218, 0.1);
+    border-color: rgba(9, 105, 218, 0.3);
+}
+
+.credential-email {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+/* Status Panel */
+.status-panel {
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(9, 105, 218, 0.05) 0%, rgba(9, 105, 218, 0.02) 100%);
+    border: 1px solid rgba(9, 105, 218, 0.2);
+    border-radius: var(--radius-md);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Character Counter */
+.char-counter {
+    text-align: right;
+}
+
+.char-counter span {
+    font-weight: 600;
+}
+
+/* Email List Card */
+.email-list-card {
+    box-shadow: var(--shadow-md);
+}
+
+.bg-gradient-primary {
+    background: var(--gradient-primary);
+}
+
+/* Modern Table */
+.modern-table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.modern-table thead {
+    background: linear-gradient(135deg, #f6f8fa 0%, #ffffff 100%);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.modern-table thead th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    padding: 1rem 0.75rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.modern-table tbody tr {
+    border-bottom: 1px solid #e1e4e8;
+}
+
+.modern-table tbody tr:hover {
+    background: rgba(9, 105, 218, 0.03);
+}
+
+.modern-table tbody td {
+    padding: 0.9rem 0.75rem;
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+/* Modern Checkbox */
+.modern-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 2px solid #d1d9e0;
+    transition: var(--transition);
+}
+
+.modern-checkbox:checked {
+    background-color: var(--sidebar-active);
+    border-color: var(--sidebar-active);
+}
+
+/* Empty State */
+.empty-state {
+    background: linear-gradient(135deg, rgba(9, 105, 218, 0.02) 0%, transparent 100%);
+}
+
+.empty-state-content {
+    animation: fadeIn 0.5s ease;
+}
+
+/* Modern Modal */
+.modern-modal {
+    border: none;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.modern-modal .modal-header {
+    border-bottom: none;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.modern-modal .modal-footer {
+    border-top: 1px solid var(--border-color);
+}
+
+/* Modern Check */
+.modern-check .form-check-input {
+    width: 20px;
+    height: 20px;
+    margin-top: 0.15rem;
+    cursor: pointer;
+    border: 2px solid #d1d9e0;
+    transition: var(--transition);
+}
+
+.modern-check .form-check-input:checked {
+    background-color: var(--sidebar-active);
+    border-color: var(--sidebar-active);
+}
+
+.modern-check label {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Slide In Animation */
+.animate-slide-in {
+    animation: slideIn 0.4s ease forwards;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Spin Animation for Refresh Button */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Status Dropdown Buttons */
+.dropdown-toggle {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.6rem;
+    border: none;
+}
+
+.dropdown-toggle:after {
+    font-size: 0.7rem;
+}
+
+.dropdown-menu {
+    font-size: 0.85rem;
+    min-width: 180px;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(9, 105, 218, 0.1);
+}
+
+/* Bulk Actions */
+#bulkActionsContainer {
+    animation: fadeIn 0.3s ease;
+}
+
+.btn-group .btn {
+    font-size: 0.85rem;
+}
+
+/* Selection Dropdown */
+.dropdown .btn-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dropdown .btn-link:hover {
+    color: var(--sidebar-active);
+}
+
+.dropdown .btn-link::after {
+    font-size: 0.6rem;
+    margin-left: 0.2rem;
+    vertical-align: middle;
+}
+
+.dropdown-menu {
+    z-index: 1050;
+}
+
+.dropdown-header {
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.5rem 1rem 0.25rem;
+}
+
+/* Table header sticky positioning */
+.modern-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Responsive Adjustments for Email Outreach */
+@media (max-width: 991.98px) {
+    .step-header {
+        padding: 1rem;
+    }
+    
+    .step-number {
+        width: 36px;
+        height: 36px;
+        font-size: 1.25rem;
+    }
+    
+    .step-info h5 {
+        font-size: 1rem;
+    }
+}

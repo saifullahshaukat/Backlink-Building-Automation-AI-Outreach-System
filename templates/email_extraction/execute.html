@@ -18,9 +18,8 @@
                     <label class="form-label fw-medium">Source Type</label>
                     <select class="form-select" id="sourceType">
                         <option value="manual">Manual Input</option>
-                        <option value="scraped">Scraped Data</option>
-                        <option value="ahrefs_data">Ahrefs Data</option>
-                        <option value="csv">CSV Upload</option>
+                        <option value="scraped">From Scraped Data</option>
+                        <option value="csv">CSV/Excel Upload</option>
                     </select>
                 </div>
                 
@@ -181,10 +180,12 @@ document.getElementById('sourceType').addEventListener('change', function() {
     const sourceMap = {
         'manual': 'manualInput',
         'scraped': 'scrapedInput',
-        'ahrefs_data': 'scrapedInput',
         'csv': 'csvInput'
     };
-    document.getElementById(sourceMap[this.value]).style.display = 'block';
+    const targetDiv = sourceMap[this.value];
+    if (targetDiv) {
+        document.getElementById(targetDiv).style.display = 'block';
+    }
 });
 
 document.getElementById('extractionMethod').addEventListener('change', function() {

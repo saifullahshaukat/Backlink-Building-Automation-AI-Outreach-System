@@ -1,0 +1,28 @@
+{
+  "description": "Example CSV column mapping for custom fields",
+  "required_columns": {
+    "Email": "Email address of the recipient (required)"
+  },
+  "optional_columns": {
+    "URL": "Website URL or domain (optional but recommended)",
+    "Name": "Recipient's name - use (name) in templates",
+    "Company": "Company name - use (company) in templates",
+    "Position": "Job title - use (position) in templates"
+  },
+  "template_usage": {
+    "standard_fields": [
+      "(company) - Auto-extracted from domain",
+      "(domain) - The website domain"
+    ],
+    "custom_fields": [
+      "(name) - Maps to Name column",
+      "(position) - Maps to Position column",
+      "(customfield) - Any custom column you map"
+    ]
+  },
+  "example_mapping": {
+    "csv_column": "Name",
+    "template_placeholder": "(name)",
+    "usage": "Hello (name), I noticed (company) at (domain)..."
+  }
+}

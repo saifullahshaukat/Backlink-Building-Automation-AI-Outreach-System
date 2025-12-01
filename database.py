@@ -371,7 +371,24 @@ class EmailOutreach(db.Model):
     sent_at = db.Column(db.DateTime)
     error_message = db.Column(db.Text)
     execution_mode = db.Column(db.String(20), default='automatic')
+    custom_fields = db.Column(db.Text)  # JSON string for custom fields
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def set_custom_fields(self, fields_dict):
+        """Store custom fields as JSON"""
+        if fields_dict:
+            self.custom_fields = json.dumps(fields_dict)
+        else:
+            self.custom_fields = None
+    
+    def get_custom_fields(self):
+        """Retrieve custom fields from JSON"""
+        if self.custom_fields:
+            try:
+                return json.loads(self.custom_fields)
+            except:
+                return {}
+        return {}
     
     def __repr__(self):
         return f'<EmailOutreach {self.email}>'
