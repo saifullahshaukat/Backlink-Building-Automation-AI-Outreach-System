@@ -2,7 +2,7 @@
 
 A comprehensive Flask-based web application for automating backlink building, email outreach campaigns, and SEO data management. This system integrates with multiple APIs and provides tools for web scraping, email extraction, and automated outreach.
 
-## 🚀 Features
+## Features
 
 ### 1. **Ahrefs API Integration**
 - Fetch domain metrics, backlinks stats, and historical data
@@ -45,13 +45,13 @@ A comprehensive Flask-based web application for automating backlink building, em
 - Network I/O monitoring
 - Process management dashboard
 
-## 📋 Prerequisites
+## Prerequisites
 
 - **Python 3.8+**
 - **Chrome/Chromium Browser** (for Selenium)
 - **Git**
 
-## 🛠️ Installation
+## Installation
 
 ### 1. Clone the Repository
 
@@ -88,7 +88,7 @@ AHREFS_TOKEN = 'your-ahrefs-api-token'
 HUNTER_API_KEY = 'your-hunter-io-api-key'
 ```
 
-**⚠️ IMPORTANT**: Never commit API keys or credentials to the repository!
+**IMPORTANT**: Never commit API keys or credentials to the repository!
 
 ### 4. Initialize Database
 
@@ -104,14 +104,14 @@ The application will be available at:
 - Local: `http://127.0.0.1:5005`
 - Network: `http://YOUR_IP:5005`
 
-## 🔐 Default Login Credentials
+## Default Login Credentials
 
 - **Username**: `admin`
 - **Password**: `123`
 
-**⚠️ Change these credentials immediately in production!**
+**Change these credentials immediately in production!**
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 merged_app/
@@ -145,7 +145,7 @@ merged_app/
 └── instance/                   # Instance-specific files (gitignored)
 ```
 
-## 🎯 Usage
+## Usage
 
 ### Email Outreach Workflow
 
@@ -182,7 +182,7 @@ merged_app/
 3. View historical data and trends
 4. Export to Google Sheets or CSV
 
-## 🔧 Configuration
+## Configuration
 
 ### SMTP Settings (Gmail Example)
 
@@ -198,7 +198,7 @@ merged_app/
 - **Ahrefs**: https://ahrefs.com/api
 - **Hunter.io**: https://hunter.io/api
 
-## 📊 Database
+## Database
 
 The application uses SQLite by default. Database models include:
 
@@ -212,7 +212,7 @@ The application uses SQLite by default. Database models include:
 - **OutreachData**: Outreach campaign results
 - **ScrapedData**: Web scraping results
 
-## 🚨 Important Security Notes
+## Important Security Notes
 
 1. **Never commit**:
    - API keys or tokens
@@ -225,7 +225,7 @@ The application uses SQLite by default. Database models include:
 4. **Enable HTTPS** in production
 5. **Regular backups** of your database
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Chrome Driver Issues
 - The app uses `webdriver-manager` to auto-install ChromeDriver
@@ -240,11 +240,11 @@ The application uses SQLite by default. Database models include:
 - Ensure CSV/Excel files have proper column headers
 - Check file encoding (UTF-8 recommended)
 
-## 📝 License
+## License
 
 This project is provided as-is for educational and business purposes.
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please:
 1. Fork the repository
@@ -253,7 +253,7 @@ Contributions are welcome! Please:
 4. Push to the branch
 5. Open a Pull Request
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 This tool is for legitimate business outreach purposes only. Always:
 - Comply with CAN-SPAM Act and GDPR
@@ -261,7 +261,7 @@ This tool is for legitimate business outreach purposes only. Always:
 - Respect website terms of service when scraping
 - Use reasonable rate limits to avoid overwhelming servers
 
-## 📧 Support
+## Support
 
 For issues and questions, please open an issue on GitHub.
 
